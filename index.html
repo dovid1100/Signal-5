@@ -11,8 +11,11 @@
 <title>SIGNAL — Market Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-family:'IBM Plex Mono',monospace;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-family:'IBM Plex Mono',monospace;font-size:var(--base-font,13px);-webkit-tap-highlight-color:transparent}
+
+/* ── Variables ── */
 :root{
   --bg:#0E1016;--surface:#14171F;--surface2:#1A1E2A;--surface3:#222636;
   --border:rgba(255,255,255,.055);--border2:rgba(255,255,255,.10);
@@ -24,15 +27,13 @@ html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-fami
   --muted:rgba(200,210,230,.38);--muted2:rgba(200,210,230,.55);
   --text:#E8EDF5;--text2:rgba(232,237,245,.68);
   --sidebar-w:72px;--header-h:54px;--subbar-h:38px;
+  --base-font:13px;
 }
+
+/* ── Light theme ── */
 [data-theme="light"]{
   --bg:#F0F2F7;--surface:#FFFFFF;--surface2:#F5F7FC;--surface3:#E8ECF5;
   --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.12);
-  --blue:#0D8FCC;--blue-dim:rgba(13,143,204,.10);--blue-glow:rgba(13,143,204,.20);
-  --red:#D6294A;--red-dim:rgba(214,41,74,.10);
-  --amber:#C47D00;--amber-dim:rgba(196,125,0,.10);
-  --green:#0B8A56;--green-dim:rgba(11,138,86,.10);
-  --purple:#7B3FC4;--purple-dim:rgba(123,63,196,.10);
   --muted:rgba(30,40,60,.38);--muted2:rgba(30,40,60,.60);
   --text:#111828;--text2:rgba(17,24,40,.72);
 }
@@ -40,76 +41,64 @@ html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-fami
 [data-theme="light"] body::after{display:none}
 [data-theme="light"] .header{background:rgba(240,242,247,.97)}
 [data-theme="light"] .subbar{background:rgba(245,247,252,.97)}
-[data-theme="light"] .ticker-sidebar{background:var(--surface)}
+
+/* ── Scanlines ── */
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px)}
 
-/* ─ HEADER ─ */
+/* ── Compact mode ── */
+[data-compact="1"] .ticker-item{height:46px}
+[data-compact="1"] .signal-row-mini{padding:8px 12px}
+[data-compact="1"] .detail-area{padding:16px 20px}
+
+/* ════════ HEADER ════════ */
 .header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--header-h);
   background:rgba(14,16,22,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--border2);
   display:flex;align-items:center;padding:0 12px;gap:10px;overflow:hidden}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:9px;flex-shrink:0}
-.logo-pulse{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue);
-  animation:pulse 2s ease-in-out infinite}
+.logo-pulse{width:7px;height:7px;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 10px var(--blue);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 10px var(--blue)}50%{opacity:.35;box-shadow:0 0 3px var(--blue)}}
 .hdr-div{width:1px;height:22px;background:var(--border2);flex-shrink:0}
-.hdr-stats{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
-.stat-pill{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.07em;
-  color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.hdr-stats{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.stat-pill{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
 .stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .dot-green{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 1.8s ease-in-out infinite}
 .dot-amber{background:var(--amber)}
-.stat-pill strong{color:var(--text2);font-weight:500}
-.hdr-cd{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);
-  border-radius:5px;padding:5px 10px}
-.hdr-cd-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.hdr-cd{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:5px 10px}
 .hdr-cd-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--blue);letter-spacing:.04em}
 .hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
-.api-input{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;
-  padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted2);
-  width:160px;outline:none;transition:border-color .2s,color .2s}
-.api-input:focus{border-color:var(--blue);color:var(--text)}
-.api-input::placeholder{color:rgba(255,255,255,.18)}
 .btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;padding:7px 13px;
-  transition:all .2s;white-space:nowrap}
-.btn-primary{background:var(--blue);color:#080a10}
-.btn-primary:hover{background:#72daff;box-shadow:0 0 18px var(--blue-glow)}
+  text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;padding:7px 13px;transition:all .2s;white-space:nowrap}
 .btn-scan{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
-.btn-settings{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted2);
-  font-size:16px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .2s;flex-shrink:0}
-.btn-settings:hover{border-color:var(--blue);color:var(--blue)}
 .btn-scan:hover{border-color:var(--green);color:var(--green)}
 .btn-scan:disabled{opacity:.5;cursor:default}
 .mobile-status{display:none;align-items:center;gap:8px;font-size:10px;color:var(--muted);flex:1;min-width:0}
+#scanStatus{font-size:9px;color:var(--muted)}
 
-/* ─ SUBBAR ─ */
+/* ════════ SUBBAR ════════ */
 .subbar{position:fixed;top:var(--header-h);left:0;right:0;z-index:190;height:var(--subbar-h);
   background:rgba(20,23,31,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
   display:flex;align-items:center;padding:0 16px 0 calc(var(--sidebar-w) + 16px)}
 .tab{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-  padding:0 14px;height:100%;display:flex;align-items:center;gap:6px;cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+  padding:0 12px;height:100%;display:flex;align-items:center;gap:6px;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 .tab:hover:not(.active){color:var(--text2)}
 .tab-badge{background:var(--blue-dim);color:var(--blue);border-radius:3px;padding:1px 5px;font-size:9px}
 .tab-badge-red{background:var(--red-dim);color:var(--red)}
-.subbar-sep{width:1px;height:18px;background:var(--border2);margin:0 6px;flex-shrink:0}
-.filter-group{display:flex;gap:5px;margin-left:auto}
+.subbar-sep{width:1px;height:18px;background:var(--border2);margin:0 4px;flex-shrink:0}
+.filter-group{display:flex;gap:4px;margin-left:auto}
 .chip{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
-  background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:3px 8px;
-  cursor:pointer;transition:all .18s}
+  background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:3px 8px;cursor:pointer;transition:all .18s}
 .chip.on{color:var(--blue);border-color:var(--blue);background:var(--blue-dim)}
-.chip:hover:not(.on){color:var(--text2);border-color:var(--border2)}
-#scanStatus{font-size:9px;color:var(--muted);margin-left:10px;white-space:nowrap}
 
-/* ─ SHELL ─ */
+/* ════════ SHELL ════════ */
 .shell{display:flex;padding-top:calc(var(--header-h) + var(--subbar-h));height:100vh}
 
-/* ─ TICKER SIDEBAR ─ */
-.ticker-sidebar{position:fixed;top:calc(var(--header-h) + var(--subbar-h));left:0;bottom:0;
+/* ════════ SIDEBAR ════════ */
+.ticker-sidebar{position:fixed;top:calc(var(--header-h)+var(--subbar-h));left:0;bottom:0;
   width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border2);
   overflow-y:auto;overflow-x:hidden;z-index:100;scrollbar-width:none}
 .ticker-sidebar::-webkit-scrollbar{display:none}
@@ -120,121 +109,201 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .ticker-item.urg-critical::before{background:var(--red);box-shadow:0 0 10px var(--red)}
 .ticker-item.urg-high::before{background:var(--amber)}
 .ticker-item.urg-medium::before{background:var(--green)}
-.ticker-item:hover{background:var(--surface2)}
-.ticker-item.active{background:var(--surface2)}
+.ticker-item.urg-critical{animation:critical-glow 2s ease-in-out infinite}
+@keyframes critical-glow{0%,100%{box-shadow:inset 0 0 20px rgba(255,69,96,.08)}50%{box-shadow:inset 0 0 20px rgba(255,69,96,.22)}}
+.ticker-item:hover,.ticker-item.active{background:var(--surface2)}
 .ticker-item.active::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--blue)}
 .t-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--text)}
 .t-move{font-size:9px;font-weight:600}
+.t-pin{font-size:8px;color:var(--amber);position:absolute;top:5px;right:6px}
 .move-up{color:var(--green)}.move-dn{color:var(--red)}
 @keyframes flash-item{0%{background:rgba(62,201,255,.18)}100%{background:transparent}}
 .ticker-item.flash{animation:flash-item .8s ease}
 
-/* ─ DETAIL AREA ─ */
+/* ════════ DETAIL AREA ════════ */
 .detail-area{margin-left:var(--sidebar-w);flex:1;overflow-y:auto;padding:28px 32px;
   scrollbar-width:thin;scrollbar-color:var(--surface3) transparent}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
 
-/* ─ EMPTY STATE ─ */
+/* ── Slide up animation ── */
+@keyframes slide-up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slide-up .32s cubic-bezier(.32,1.2,.42,1) both}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Empty state ── */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
   height:55vh;gap:14px;color:var(--muted);text-align:center}
 .empty-icon{font-size:38px;opacity:.3}
 .empty-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--muted2)}
 .empty-body{font-size:11px;line-height:1.85;max-width:270px}
 
-/* ─ SIGNAL HERO ─ */
-@keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.signal-hero{display:flex;align-items:flex-start;gap:20px;margin-bottom:28px;animation:fade-up .35s ease both}
+/* ── ES (empty state with live prices) ── */
+.es-wrap{padding:4px 0}
+.es-header{margin-bottom:18px}
+.es-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--text);margin-bottom:4px}
+.es-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.es-perf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.es-perf-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+.es-perf-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.es-perf-val{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.es-section-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.es-row{display:flex;align-items:center;gap:10px;padding:10px 13px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;
+  cursor:pointer;transition:background .15s,border-color .15s}
+.es-row:hover{background:var(--surface2);border-color:var(--border2)}
+.es-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;width:44px;flex-shrink:0}
+.es-catalyst{flex-shrink:0;font-size:9px}
+.es-date{font-size:9px;color:var(--muted);margin-left:auto;flex-shrink:0}
+.es-move{font-size:11px;font-weight:600;width:50px;text-align:right;flex-shrink:0}
+.es-outcome{font-size:11px;width:14px;text-align:center;flex-shrink:0}
+
+/* ── Daily brief overlay ── */
+.brief-overlay{position:fixed;inset:0;z-index:500;background:rgba(14,16,22,.95);
+  backdrop-filter:blur(30px);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:32px 24px;cursor:pointer;animation:fade-up .4s ease both}
+.brief-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;letter-spacing:.2em;
+  color:var(--blue);text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:10px}
+.brief-status{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px}
+.brief-cd{font-family:'Syne',sans-serif;font-weight:800;font-size:52px;color:var(--blue);
+  letter-spacing:.04em;line-height:1;margin-bottom:4px}
+.brief-cd-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:32px}
+.brief-signal{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
+  padding:18px 20px;width:100%;max-width:360px;margin-bottom:32px}
+.brief-signal-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.brief-signal-row{display:flex;align-items:center;gap:12px}
+.brief-ticker{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--text)}
+.brief-move{font-family:'Syne',sans-serif;font-weight:700;font-size:20px}
+.brief-headline{font-size:11px;color:var(--text2);line-height:1.6;margin-top:8px}
+.brief-dismiss{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+/* ── Signal hero ── */
+.signal-hero{display:flex;align-items:flex-start;gap:18px;margin-bottom:24px}
 .hero-badge{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  width:68px;height:68px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;
-  font-size:10px;letter-spacing:.10em;text-transform:uppercase;gap:2px}
-.badge-critical{background:var(--red-dim);border:1px solid rgba(255,69,96,.3);color:var(--red)}
+  width:64px;height:64px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;
+  font-size:9px;letter-spacing:.10em;text-transform:uppercase;gap:2px}
+.badge-critical{background:var(--red-dim);border:1px solid rgba(255,69,96,.3);color:var(--red);
+  box-shadow:0 0 22px rgba(255,69,96,.25);animation:critical-hero-glow 2s ease-in-out infinite}
+@keyframes critical-hero-glow{0%,100%{box-shadow:0 0 22px rgba(255,69,96,.25)}50%{box-shadow:0 0 40px rgba(255,69,96,.5)}}
 .badge-high{background:var(--amber-dim);border:1px solid rgba(255,176,32,.3);color:var(--amber)}
 .badge-medium{background:var(--green-dim);border:1px solid rgba(32,224,144,.3);color:var(--green)}
-.badge-icon{font-size:18px;margin-bottom:2px}
+.badge-icon{font-size:17px;margin-bottom:2px}
 .hero-info{flex:1;min-width:0}
-.hero-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}
-.hero-ticker{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:.04em}
-.hero-company{font-size:12px;color:var(--muted2);font-style:italic}
-.hero-headline{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:10px}
-.hero-tags{display:flex;gap:7px;flex-wrap:wrap}
+.hero-row{display:flex;align-items:baseline;gap:10px;margin-bottom:5px;flex-wrap:wrap}
+.hero-ticker{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;letter-spacing:.04em}
+.hero-company{font-size:11px;color:var(--muted2);font-style:italic}
+.hero-headline{font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:9px}
+.hero-tags{display:flex;gap:6px;flex-wrap:wrap}
 .tag{font-size:9px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;border-radius:3px;padding:3px 8px}
 .tag-fda{background:var(--purple-dim);color:var(--purple)}.tag-earn{background:var(--blue-dim);color:var(--blue)}
 .tag-ma{background:var(--amber-dim);color:var(--amber)}.tag-short{background:var(--red-dim);color:var(--red)}
 .tag-8k{background:var(--green-dim);color:var(--green)}.tag-macro{background:rgba(255,255,255,.06);color:var(--muted2)}
-.hero-metrics{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:9px;width:220px}
-.metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
-.metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
-.metric-val{font-family:'Syne',sans-serif;font-weight:700;font-size:19px}
+.hero-metrics{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:210px}
+.metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.metric-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
 .metric-sub{font-size:9px;color:var(--muted);margin-top:2px}
-.val-green{color:var(--green)}.val-red{color:var(--red)}.val-amber{color:var(--amber)}.val-blue{color:var(--blue)}
+.val-green{color:var(--green)}.val-red{color:var(--red)}.val-blue{color:var(--blue)}.val-amber{color:var(--amber)}
 
-/* ─ SECTIONS ─ */
-.section{margin-bottom:24px;animation:fade-up .4s ease both}
-.section-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.conf-track{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:8px}
+/* ── Quick actions ── */
+.quick-actions{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap}
+.qa-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;background:var(--surface2);color:var(--muted2);
+  border:1px solid var(--border);border-radius:5px;padding:6px 12px;cursor:pointer;transition:all .2s}
+.qa-btn:hover{border-color:var(--blue);color:var(--blue)}
+.qa-btn.pinned{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+.qa-btn.archived{border-color:var(--muted);color:var(--muted);background:var(--surface3)}
+
+/* ── Confidence bar ── */
+.conf-track{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:6px}
 .conf-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
 .fill-red{background:linear-gradient(90deg,var(--red),#ff8096)}
 .fill-amber{background:linear-gradient(90deg,var(--amber),#ffd580)}
 .fill-green{background:linear-gradient(90deg,var(--green),#80ffcc)}
+
+/* ── Sections ── */
+.section{margin-bottom:22px;animation:fade-up .4s ease both}
+.section-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:11px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 .reasoning-box{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--blue);
-  border-radius:0 8px 8px 0;padding:15px 17px;font-size:12px;color:var(--text2);line-height:1.78}
+  border-radius:0 8px 8px 0;padding:14px 16px;font-size:11px;color:var(--text2);line-height:1.78}
 .reasoning-box em{color:var(--blue);font-style:normal}
 
-/* ─ SOURCES ─ */
-.sources-grid{display:flex;flex-direction:column;gap:9px}
-.source-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 15px;
-  display:flex;align-items:flex-start;gap:12px;transition:border-color .2s,background .2s;
-  text-decoration:none;cursor:pointer}
+/* ── Note box ── */
+.note-box{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px}
+.note-input{width:100%;background:transparent;border:none;outline:none;font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--text2);line-height:1.7;resize:none;min-height:64px}
+.note-input::placeholder{color:var(--muted)}
+.note-save-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;background:var(--surface3);color:var(--muted2);border:1px solid var(--border);
+  border-radius:4px;padding:5px 12px;cursor:pointer;transition:all .2s;margin-top:8px}
+.note-save-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── Chart ── */
+.chart-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:4px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.chart-title{font-size:10px;color:var(--muted2);font-weight:600}
+.chart-toggle{display:flex;gap:5px}
+.chart-btn{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);background:var(--surface3);border:1px solid var(--border);
+  border-radius:3px;padding:3px 8px;cursor:pointer;transition:all .18s}
+.chart-btn.on{color:var(--blue);border-color:var(--blue);background:var(--blue-dim)}
+.chart-canvas-wrap{position:relative;height:160px;width:100%}
+canvas.chart-canvas{width:100%!important;height:100%!important}
+.chart-loading{display:flex;align-items:center;justify-content:center;height:160px;
+  font-size:10px;color:var(--muted)}
+
+/* ── Sources ── */
+.sources-grid{display:flex;flex-direction:column;gap:8px}
+.source-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;
+  display:flex;align-items:flex-start;gap:11px;text-decoration:none;cursor:pointer;transition:border-color .2s,background .2s}
 .source-card:hover{border-color:var(--blue);background:var(--surface3)}
-.source-icon{width:34px;height:34px;border-radius:6px;background:var(--surface3);
-  border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;
-  font-size:13px;flex-shrink:0}
+.source-icon{width:32px;height:32px;border-radius:6px;background:var(--surface3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .source-body{flex:1;min-width:0}
-.source-pub-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.source-pub-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
 .source-pub{font-size:11px;font-weight:600;color:var(--blue)}
 .source-time-label{font-size:9px;color:var(--muted)}
-.source-hl{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:5px}
+.source-hl{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:4px}
 .source-url{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block}
 .source-card:hover .source-url{color:var(--blue)}
-.source-arrow{font-size:15px;color:var(--muted);flex-shrink:0;margin-top:6px;transition:color .2s,transform .2s}
+.source-arrow{font-size:14px;color:var(--muted);flex-shrink:0;margin-top:5px;transition:color .2s,transform .2s}
 .source-card:hover .source-arrow{color:var(--blue);transform:translateX(3px)}
 
-/* ─ OUTCOME ─ */
+/* ── Outcome ── */
 .outcome-card{display:flex;align-items:center;gap:12px;background:var(--surface2);
-  border:1px solid var(--border);border-radius:8px;padding:13px 15px}
+  border:1px solid var(--border);border-radius:8px;padding:12px 14px}
 .outcome-msg{flex:1;font-size:11px;color:var(--muted2);line-height:1.5}
 .badge-hit{background:var(--green-dim);color:var(--green);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:600}
 .badge-miss{background:var(--red-dim);color:var(--red);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:600}
 .badge-pend{background:var(--blue-dim);color:var(--blue);border-radius:4px;padding:4px 10px;font-size:10px;font-weight:600}
 .btn-check{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
   text-transform:uppercase;background:var(--surface3);color:var(--text2);border:1px solid var(--border2);
-  border-radius:5px;padding:8px 14px;cursor:pointer;transition:all .2s;white-space:nowrap}
+  border-radius:5px;padding:7px 12px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .btn-check:hover{border-color:var(--blue);color:var(--blue)}
 .btn-check:disabled{opacity:.5;cursor:default}
 
-/* ─ MINI SIGNAL ROW (24h + history) ─ */
-.hour-group{margin-bottom:22px}
+/* ── Mini signal rows (24h / history) ── */
+.hour-group{margin-bottom:20px}
 .hour-label{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:10px}
 .hour-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.signal-row-mini{display:flex;align-items:center;gap:10px;padding:11px 14px;
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;
+.signal-row-mini{display:flex;align-items:center;gap:10px;padding:10px 13px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;
   cursor:pointer;transition:background .15s,border-color .15s;position:relative;overflow:hidden}
 .signal-row-mini::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
 .signal-row-mini.urg-critical::before{background:var(--red);box-shadow:0 0 8px var(--red)}
 .signal-row-mini.urg-high::before{background:var(--amber)}
 .signal-row-mini.urg-medium::before{background:var(--green)}
+.signal-row-mini.urg-critical{box-shadow:0 0 12px rgba(255,69,96,.15)}
 .signal-row-mini:hover{background:var(--surface2);border-color:var(--border2)}
-.srm-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;width:46px;flex-shrink:0}
+.srm-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;width:44px;flex-shrink:0}
 .srm-headline{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.srm-move{font-size:12px;font-weight:600;width:52px;text-align:right;flex-shrink:0}
-.srm-badge{font-size:9px;font-weight:600;border-radius:3px;padding:2px 7px;flex-shrink:0}
+.srm-move{font-size:11px;font-weight:600;width:50px;text-align:right;flex-shrink:0}
+.srm-badge{font-size:9px;font-weight:600;border-radius:3px;padding:2px 6px;flex-shrink:0}
 
-/* ─ HISTORY TOOLBAR ─ */
-.history-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+/* ── History toolbar ── */
+.history-toolbar{display:flex;align-items:center;gap:7px;margin-bottom:18px;flex-wrap:wrap}
 .range-btn{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--muted);background:var(--surface2);border:1px solid var(--border);
   border-radius:3px;padding:4px 10px;cursor:pointer;transition:all .18s}
@@ -243,139 +312,140 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   text-transform:uppercase;color:var(--muted);background:var(--surface3);border:1px solid var(--border2);
   border-radius:3px;padding:4px 10px;cursor:pointer;transition:all .18s;margin-left:auto}
 .export-btn:hover{color:var(--green);border-color:var(--green)}
-.history-count{font-size:10px;color:var(--muted)}
 
-/* ─ ANALYTICS ─ */
-.analytics-wrap{max-width:680px}
-.period-toggle{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap}
+/* ── Analytics ── */
+.analytics-wrap{max-width:660px}
+.period-toggle{display:flex;gap:5px;margin-bottom:20px;flex-wrap:wrap}
 .period-btn{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--muted);background:var(--surface2);border:1px solid var(--border);
-  border-radius:4px;padding:5px 12px;cursor:pointer;transition:all .18s}
+  border-radius:4px;padding:5px 11px;cursor:pointer;transition:all .18s}
 .period-btn.on{color:var(--blue);border-color:var(--blue);background:var(--blue-dim)}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
-.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px}
-.stat-card-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.stat-card-val{font-family:'Syne',sans-serif;font-weight:700;font-size:22px}
-.stat-card-sub{font-size:9px;color:var(--muted);margin-top:3px}
-.analytics-section{margin-bottom:24px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px}
+.stat-card-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.stat-card-val{font-family:'Syne',sans-serif;font-weight:700;font-size:20px}
+.stat-card-sub{font-size:9px;color:var(--muted);margin-top:2px}
+.analytics-section{margin-bottom:22px}
 .analytics-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  color:var(--muted);margin-bottom:11px;display:flex;align-items:center;gap:10px}
 .analytics-title::after{content:'';flex:1;height:1px;background:var(--border)}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.bar-label{font-size:10px;color:var(--text2);width:86px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.bar-label{font-size:10px;color:var(--text2);width:84px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
 .bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
-.bar-pct{font-size:10px;font-weight:600;width:38px;text-align:right;flex-shrink:0}
-.bar-count{font-size:9px;color:var(--muted);width:22px;flex-shrink:0;text-align:right}
+.bar-pct{font-size:10px;font-weight:600;width:36px;text-align:right;flex-shrink:0}
+.bar-count{font-size:9px;color:var(--muted);width:20px;flex-shrink:0;text-align:right}
 .no-data{font-size:11px;color:var(--muted);text-align:center;padding:40px 0;line-height:1.9}
-.settings-wrap{max-width:480px}
-.settings-section{margin-bottom:32px}
+
+/* ── Settings ── */
+.settings-wrap{max-width:500px;padding-bottom:32px}
+.settings-section{margin-bottom:28px}
 .settings-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  color:var(--muted);margin-bottom:11px;display:flex;align-items:center;gap:10px}
 .settings-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.settings-card{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:20px}
-.settings-field{margin-bottom:16px}
+.settings-card{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:18px;margin-bottom:10px}
+.settings-field{margin-bottom:14px}
 .settings-field:last-child{margin-bottom:0}
-.settings-field-label{font-size:10px;color:var(--muted2);margin-bottom:8px}
+.settings-field-label{font-size:10px;color:var(--muted2);margin-bottom:7px}
 .settings-input{width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;
-  padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);
-  outline:none;transition:border-color .2s}
+  padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);outline:none;transition:border-color .2s}
 .settings-input:focus{border-color:var(--blue)}
 .settings-input::placeholder{color:rgba(255,255,255,.18)}
 .btn-connect-full{width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
   letter-spacing:.08em;text-transform:uppercase;background:var(--blue);color:#080a10;
-  border:none;border-radius:6px;padding:11px;cursor:pointer;transition:all .2s;margin-top:4px}
+  border:none;border-radius:6px;padding:11px;cursor:pointer;transition:all .2s;margin-top:2px;display:block}
 .btn-connect-full:hover{background:#72daff;box-shadow:0 0 18px var(--blue-glow)}
-.connect-status{font-size:10px;color:var(--muted);margin-top:10px;min-height:16px;text-align:center}
-.settings-hint{font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px}
+.connect-status{font-size:10px;color:var(--muted);margin-top:8px;min-height:16px;text-align:center}
+.settings-hint{font-size:10px;color:var(--muted);line-height:1.7;margin-top:9px}
+.settings-meta{font-size:10px;color:var(--muted2);line-height:1.8}
+.settings-meta span{color:var(--blue)}
 
-/* ─ BACK BUTTON ─ */
+/* Preset buttons */
+.preset-group{display:flex;flex-wrap:wrap;gap:6px}
+.preset-btn{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);background:var(--surface3);border:1px solid var(--border);
+  border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .18s}
+.preset-btn.on{color:var(--blue);border-color:var(--blue);background:var(--blue-dim)}
+
+/* Catalyst toggles */
+.cat-group{display:flex;flex-wrap:wrap;gap:6px}
+.cat-toggle{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .18s;border:1px solid var(--border);
+  background:var(--surface3);color:var(--muted)}
+.cat-toggle.on{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
+
+/* Range slider */
+.settings-slider{width:100%;accent-color:var(--blue);cursor:pointer}
+
+/* Color swatches */
+.color-group{display:flex;gap:10px}
+.color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .2s;
+  border:2px solid transparent}
+.color-swatch.on{border-color:#fff;transform:scale(1.2)}
+.sw-blue{background:#3EC9FF}.sw-green{background:#20E090}.sw-purple{background:#B06EFF}.sw-gold{background:#FFB020}
+
+/* Danger buttons */
+.btn-danger{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;background:var(--red-dim);color:var(--red);border:1px solid rgba(255,69,96,.3);
+  border-radius:6px;padding:9px 16px;cursor:pointer;transition:all .2s;width:100%;margin-bottom:8px}
+.btn-danger:hover{background:rgba(255,69,96,.2);border-color:var(--red)}
+.btn-secondary{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;background:var(--surface3);color:var(--muted2);border:1px solid var(--border2);
+  border-radius:6px;padding:9px 16px;cursor:pointer;transition:all .2s;width:100%}
+.btn-secondary:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Back button */
 .back-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
   text-transform:uppercase;background:var(--surface3);color:var(--muted2);border:1px solid var(--border2);
-  border-radius:5px;padding:7px 14px;cursor:pointer;margin-bottom:18px;display:inline-block;transition:all .2s}
+  border-radius:5px;padding:7px 14px;cursor:pointer;margin-bottom:16px;display:inline-block;transition:all .2s}
 .back-btn:hover{border-color:var(--blue);color:var(--blue)}
 
-/* ─ EMPTY STATE WITH LIVE PRICES ─ */
-.es-wrap{padding:8px 0}
-.es-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.es-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text2)}
-.es-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
-.es-perf{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.es-perf-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  padding:12px 16px;flex:1;min-width:100px}
-.es-perf-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
-.es-perf-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
-.es-table-header{display:flex;align-items:center;gap:10px;padding:0 14px 8px;
-  font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
-.es-row{display:flex;align-items:center;gap:10px;padding:11px 14px;
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;
-  cursor:pointer;transition:background .15s,border-color .15s}
-.es-row:hover{background:var(--surface2);border-color:var(--border2)}
-.es-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;width:46px;flex-shrink:0}
-.es-catalyst{flex-shrink:0}
-.es-date{font-size:9px;color:var(--muted);flex-shrink:0;margin-left:auto}
-.es-move{font-size:12px;font-weight:600;width:54px;text-align:right;flex-shrink:0}
-.es-outcome{font-size:11px;width:16px;text-align:center;flex-shrink:0}
-.es-loading{font-size:11px;color:var(--muted);text-align:center;padding:32px 0}
-.es-cd{font-family:'Syne',sans-serif;font-weight:800;font-size:36px;color:var(--blue);
-  letter-spacing:.04em;margin:12px 0 4px}
-.es-cd-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
-
-/* ════════════════════════════════
-   MOBILE ≤640px
-════════════════════════════════ */
+/* ════════ MOBILE ≤640px ════════ */
 @media(max-width:640px){
   :root{--header-h:50px;--subbar-h:40px;--sidebar-w:0px}
-  .header{padding:0 12px;gap:8px}
+  .header{padding:0 11px;gap:7px}
   .hdr-stats,.hdr-div{display:none}
   .btn-scan{display:flex;font-size:9px;padding:6px 9px}
-  .btn-settings{display:none}
   .mobile-status{display:flex}
-  .hdr-cd{padding:4px 8px}
-  .hdr-cd-label{display:none}
-  .hdr-cd-val{font-size:12px}
-  .subbar{padding:0 10px}
-  .tab{padding:0 9px;font-size:9px;letter-spacing:.04em}
+  .hdr-cd{padding:4px 8px}.hdr-cd-val{font-size:12px}
+  .subbar{padding:0 8px}
+  .tab{padding:0 8px;font-size:9px;letter-spacing:.04em}
   .filter-group,.subbar-sep{display:none}
-  #scanStatus{display:none}
   .ticker-sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;width:100%;height:66px;
     border-right:none;border-top:1px solid var(--border2);display:flex;flex-direction:row;
     overflow-x:auto;overflow-y:hidden;background:rgba(14,16,22,.97);backdrop-filter:blur(20px);padding:0 4px}
-  .ticker-item{flex-direction:row;height:66px;width:auto;min-width:66px;padding:0 11px;
+  .ticker-item{flex-direction:row;height:66px;width:auto;min-width:66px;padding:0 10px;
     border-bottom:none;border-right:1px solid var(--border);gap:5px;flex-shrink:0}
   .ticker-item::before{left:0;right:0;top:0;bottom:auto;width:auto;height:3px}
   .ticker-item.active::after{display:none}
-  .t-name{font-size:12px}.t-move{font-size:9px}
-  .detail-area{margin-left:0;padding:14px 14px 82px;height:calc(100vh - var(--header-h) - var(--subbar-h))}
-  .signal-hero{flex-direction:column;gap:14px}
-  .hero-badge{width:52px;height:52px}.badge-icon{font-size:15px}
-  .hero-ticker{font-size:24px}.hero-company{font-size:10px}.hero-headline{font-size:12px}
-  .hero-metrics{width:100%;grid-template-columns:1fr 1fr}.metric-val{font-size:17px}
-  .source-card{padding:10px 11px;gap:10px}
-  .source-icon{width:30px;height:30px;font-size:12px}
-  .source-hl{font-size:10px}.source-url{font-size:8px}.source-arrow{display:none}
-  .outcome-card{flex-direction:column;align-items:flex-start;gap:9px}
+  .detail-area{margin-left:0;padding:14px 14px 80px;height:calc(100vh - var(--header-h) - var(--subbar-h))}
+  .signal-hero{flex-direction:column;gap:12px}
+  .hero-badge{width:50px;height:50px}.badge-icon{font-size:14px}
+  .hero-ticker{font-size:22px}.hero-company{font-size:10px}
+  .hero-metrics{width:100%;grid-template-columns:1fr 1fr}.metric-val{font-size:16px}
+  .source-card{padding:10px 11px;gap:9px}.source-arrow{display:none}
+  .outcome-card{flex-direction:column;align-items:flex-start;gap:8px}
   .btn-check{width:100%;text-align:center}
   .stat-grid{grid-template-columns:1fr 1fr}.analytics-wrap{max-width:100%}
+  .settings-wrap{max-width:100%}
+  .brief-cd{font-size:40px}
+  .es-perf{grid-template-columns:1fr 1fr 1fr}
 }
 
-/* ─ TABLET ─ */
+/* ════════ TABLET ════════ */
 @media(min-width:641px) and (max-width:1024px){
   :root{--sidebar-w:72px}
-  .hdr-stats .stat-pill:nth-child(n+4){display:none}
-  .hdr-stats .hdr-div:nth-child(n+4){display:none}
-  #lastScanTime{display:none}
-  .api-input{width:130px}.btn-scan{display:none}
+  .api-input{width:140px}.btn-scan{display:none}
   .detail-area{padding:20px 24px}
-  .hero-ticker{font-size:26px}.hero-metrics{width:185px}.metric-val{font-size:17px}
+  .hero-ticker{font-size:26px}.hero-metrics{width:185px}.metric-val{font-size:16px}
   .stat-grid{grid-template-columns:1fr 1fr}
 }
 
-/* ─ WIDE ─ */
+/* ════════ WIDE ════════ */
 @media(min-width:1400px){
   :root{--sidebar-w:88px}
-  .detail-area{padding:36px 52px}
-  .hero-ticker{font-size:38px}.hero-metrics{width:250px}.metric-val{font-size:22px}
+  .detail-area{padding:32px 48px}
+  .hero-ticker{font-size:36px}.hero-metrics{width:240px}.metric-val{font-size:21px}
   .sources-grid{display:grid;grid-template-columns:1fr 1fr}
 }
 </style>
@@ -392,21 +462,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     <div class="stat-pill"><strong id="signalCount">0</strong>&nbsp;signals today</div>
     <div class="hdr-div"></div>
     <div class="hdr-cd">
-      <div class="hdr-cd-label">Next</div>
       <div class="hdr-cd-val" id="countdown">--:--</div>
     </div>
-    <div id="lastScanTime" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:none"></div>
   </div>
   <div class="mobile-status">
     <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0"></div>
     <span id="signalCountMobile">0 signals</span>
-    <div class="hdr-cd" style="margin-left:auto">
-      <div class="hdr-cd-val" id="countdown-mobile">--:--</div>
-    </div>
+    <div class="hdr-cd" style="margin-left:auto"><div class="hdr-cd-val" id="countdown-mobile">--:--</div></div>
   </div>
   <div class="hdr-right">
     <button class="btn btn-scan" id="scanBtn">▶ Scan Now</button>
-    <button class="btn-settings" id="settingsBtn" onclick="switchToSettings()" title="Settings">⚙</button>
   </div>
 </header>
 
@@ -424,79 +489,167 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     <div class="chip" data-filter="high">High</div>
     <div class="chip" data-filter="medium">Medium</div>
   </div>
-  <span id="scanStatus"></span>
+  <span id="scanStatus" style="font-size:9px;color:var(--muted);margin-left:8px"></span>
 </div>
 
-<!-- APP SHELL -->
+<!-- SHELL -->
 <div class="shell">
   <nav class="ticker-sidebar" id="tickerSidebar"></nav>
   <main class="detail-area" id="detailArea"></main>
 </div>
 
+<!-- DAILY BRIEF OVERLAY -->
+<div class="brief-overlay" id="briefOverlay" style="display:none" onclick="dismissBrief()">
+  <div class="brief-logo"><div class="logo-pulse"></div>SIGNAL</div>
+  <div class="brief-status" id="briefStatus">Market Closed</div>
+  <div class="brief-cd" id="briefCd">--:--</div>
+  <div class="brief-cd-label" id="briefCdLabel">until market open</div>
+  <div class="brief-signal" id="briefSignal" style="display:none">
+    <div class="brief-signal-label">Top signal today</div>
+    <div class="brief-signal-row">
+      <div class="brief-ticker" id="briefTicker"></div>
+      <div class="brief-move" id="briefMove"></div>
+    </div>
+    <div class="brief-headline" id="briefHeadline"></div>
+  </div>
+  <div class="brief-dismiss">Tap anywhere to continue</div>
+</div>
+
 <script src="app.js"></script>
 <script>
-// ─── UI STATE ────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  UI STATE
+// ════════════════════════════════════════════════════════════
 window.activeSignalId  = null;
 window.activeTab       = 'feed';
 window.activeFilter    = 'all';
 window.historyRange    = '7d';
 window.analyticsPeriod = 'allTime';
+window.activeChartMode = 'line'; // 'line' | 'candle'
 
-// ─── TABS + CHIPS wired in DOMContentLoaded below ───────────
+// ════════════════════════════════════════════════════════════
+//  DAILY BRIEF
+// ════════════════════════════════════════════════════════════
+function showDailyBrief() {
+  const overlay = document.getElementById('briefOverlay');
+  if (!overlay) return;
 
-// ─── SIDEBAR ────────────────────────────────────────────────
+  // Market status
+  const open = isMarketOpen();
+  document.getElementById('briefStatus').textContent = open ? 'Market Open' : 'Market Closed';
+
+  // Countdown
+  const ms  = open ? (nextScanAt ? nextScanAt - Date.now() : 0) : msUntilNextMarketOpen();
+  const tot = Math.floor(ms / 1000);
+  const hh  = Math.floor(tot / 3600), mm = Math.floor((tot % 3600) / 60), ss = tot % 60;
+  document.getElementById('briefCd').textContent = hh > 0 ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`;
+  document.getElementById('briefCdLabel').textContent = open ? 'until next scan' : 'until market open';
+
+  // Top signal
+  const sigs = getSignalsToday().sort((a,b) => { const o={critical:0,high:1,medium:2}; return o[a.urgency]-o[b.urgency]; });
+  if (sigs.length > 0) {
+    const top = sigs[0];
+    document.getElementById('briefTicker').textContent = top.ticker;
+    const mv = document.getElementById('briefMove');
+    mv.textContent = `${top.move >= 0 ? '+' : ''}${top.move}%`;
+    mv.className   = `brief-move ${top.move >= 0 ? 'val-green' : 'val-red'}`;
+    document.getElementById('briefHeadline').textContent = top.headline;
+    document.getElementById('briefSignal').style.display = '';
+  }
+
+  overlay.style.display = 'flex';
+}
+
+function dismissBrief() {
+  const overlay = document.getElementById('briefOverlay');
+  if (overlay) { overlay.style.opacity = '0'; overlay.style.transition = 'opacity .3s'; setTimeout(() => { overlay.style.display = 'none'; overlay.style.opacity = ''; overlay.style.transition = ''; }, 300); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      window.activeTab = t.dataset.tab;
+      const fg = document.getElementById('filterGroup');
+      if (fg) fg.style.display = window.activeTab === 'feed' ? '' : 'none';
+      renderActiveTab();
+    });
+  });
+
+  document.querySelectorAll('.chip[data-filter]').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip[data-filter]').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      window.activeFilter = c.dataset.filter;
+      renderFeed(); renderSidebar();
+    });
+  });
+
+  renderFeed();
+  renderSidebar();
+  showDailyBrief();
+
+  setInterval(() => {
+    if (window.activeTab === 'h24')       render24h();
+    if (window.activeTab === 'analytics') window.renderAnalytics();
+  }, 60000);
+});
+
+// ════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ════════════════════════════════════════════════════════════
 window.renderSidebar = function() {
   const sidebar = document.getElementById('tickerSidebar');
   if (!sidebar) return;
-  const order = { critical: 0, high: 1, medium: 2 };
-  let sigs = getSignalsToday();
-  if (window.activeFilter !== 'all') sigs = sigs.filter(s => s.urgency === window.activeFilter);
-  sigs.sort((a, b) => order[a.urgency] - order[b.urgency]);
+  const sigs = getSortedTodaySignals().filter(s => window.activeFilter === 'all' || s.urgency === window.activeFilter);
+  const pins = getPins();
 
-  if (sigs.length === 0) {
-    sidebar.innerHTML = '<div style="padding:16px 6px;text-align:center;font-size:9px;color:var(--muted);line-height:1.9">No<br>signals<br>yet</div>';
+  if (!sigs.length) {
+    sidebar.innerHTML = '<div style="padding:14px 6px;text-align:center;font-size:9px;color:var(--muted);line-height:1.9">No<br>signals<br>yet</div>';
     return;
   }
   sidebar.innerHTML = sigs.map(s => `
-    <div class="ticker-item urg-${s.urgency} ${s.id === window.activeSignalId ? 'active' : ''}"
-         data-id="${s.id}" onclick="selectSignal('${s.id}')">
+    <div class="ticker-item urg-${s.urgency} ${s.id === window.activeSignalId ? 'active' : ''}" data-id="${s.id}" onclick="selectSignal('${s.id}')">
+      ${pins.includes(s.id) ? '<div class="t-pin">📌</div>' : ''}
       <div class="t-name">${s.ticker}</div>
       <div class="t-move ${s.move >= 0 ? 'move-up' : 'move-dn'}">${s.move >= 0 ? '+' : ''}${s.move}%</div>
     </div>`).join('');
 
   document.getElementById('feedBadge').textContent = sigs.length;
-  document.getElementById('signalCount').textContent = getSignalsToday().length;
+  setText('signalCount', getSignalsToday().length);
   const mc = document.getElementById('signalCountMobile');
   if (mc) mc.textContent = getSignalsToday().length + ' signals';
 };
 
 window.flashNewSignals = function(ids) {
-  ids.forEach(id => {
-    const el = document.querySelector(`[data-id="${id}"]`);
-    if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
-  });
+  ids.forEach(id => { const el = document.querySelector(`[data-id="${id}"]`); if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } });
 };
 
-// ─── DETAIL VIEW ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  DETAIL VIEW
+// ════════════════════════════════════════════════════════════
 window.renderDetail = function(id) {
   const sig = loadSignals().find(s => s.id === id);
   if (!sig) return;
   window.activeSignalId = id;
   renderSidebar();
 
-  const confClass  = sig.urgency === 'critical' ? 'fill-red' : sig.urgency === 'high' ? 'fill-amber' : 'fill-green';
-  const moveClass  = sig.move >= 0 ? 'val-green' : 'val-red';
-  const movePfx    = sig.move >= 0 ? '+' : '';
-  const badgeIcon  = sig.urgency === 'critical' ? '⚡' : sig.urgency === 'high' ? '▲' : '●';
+  const confClass = sig.urgency === 'critical' ? 'fill-red' : sig.urgency === 'high' ? 'fill-amber' : 'fill-green';
+  const moveClass = sig.move >= 0 ? 'val-green' : 'val-red';
+  const movePfx   = sig.move >= 0 ? '+' : '';
+  const badgeIcon = sig.urgency === 'critical' ? '⚡' : sig.urgency === 'high' ? '▲' : '●';
+  const pinned    = isPinned(id);
+  const note      = getNote(id);
 
   const sourcesHtml = sig.sources.map(src => `
     <a class="source-card" href="${src.url}" target="_blank" rel="noopener noreferrer">
       <div class="source-icon">${src.icon}</div>
       <div class="source-body">
-        <div class="source-pub-row">
-          <div class="source-pub">${src.pub}</div>
-          <div class="source-time-label">${src.time}</div>
-        </div>
+        <div class="source-pub-row"><div class="source-pub">${src.pub}</div><div class="source-time-label">${src.time}</div></div>
         <div class="source-hl">${src.headline}</div>
         <span class="source-url">${src.url}</span>
       </div>
@@ -514,145 +667,317 @@ window.renderDetail = function(id) {
     outcomeHtml = `<div class="outcome-card"><div class="outcome-msg">1 hour passed — ready to check.</div><button class="btn-check" id="outcome-btn-${sig.id}" onclick="checkOutcome('${sig.id}')">Check Outcome</button></div>`;
   } else {
     const remain = Math.max(0, 60 - Math.floor((Date.now() - new Date(sig.scannedAt).getTime()) / 60000));
-    outcomeHtml = `<div class="outcome-card"><div class="outcome-msg"><span class="badge-pend">PENDING</span>&nbsp; Check available in ${remain} min.</div></div>`;
+    outcomeHtml = `<div class="outcome-card"><div class="outcome-msg"><span class="badge-pend">PENDING</span> &nbsp;Check available in ${remain} min.</div></div>`;
   }
 
   document.getElementById('detailArea').innerHTML = `
-    <div class="signal-hero">
-      <div class="hero-badge badge-${sig.urgency}">
-        <div class="badge-icon">${badgeIcon}</div>
-        ${sig.urgency.toUpperCase()}
-      </div>
-      <div class="hero-info">
-        <div class="hero-row">
-          <div class="hero-ticker">${sig.ticker}</div>
-          <div class="hero-company">${sig.company}</div>
+    <div class="slide-up">
+      <div class="signal-hero">
+        <div class="hero-badge badge-${sig.urgency}"><div class="badge-icon">${badgeIcon}</div>${sig.urgency.toUpperCase()}</div>
+        <div class="hero-info">
+          <div class="hero-row"><div class="hero-ticker">${sig.ticker}</div><div class="hero-company">${sig.company}</div></div>
+          <div class="hero-headline">${sig.headline}</div>
+          <div class="hero-tags">
+            <span class="tag ${sig.catalystTag}">${sig.catalyst}</span>
+            <span class="tag tag-macro">${sig.time}</span>
+            <span class="tag tag-macro">Vol ${sig.volume}</span>
+            <span class="tag tag-macro">${sig.marketCap}</span>
+          </div>
         </div>
-        <div class="hero-headline">${sig.headline}</div>
-        <div class="hero-tags">
-          <span class="tag ${sig.catalystTag}">${sig.catalyst}</span>
-          <span class="tag tag-macro">${sig.time}</span>
-          <span class="tag tag-macro">Vol ${sig.volume}</span>
-          <span class="tag tag-macro">${sig.marketCap}</span>
-        </div>
-      </div>
-      <div class="hero-metrics">
-        <div class="metric-card">
-          <div class="metric-label">Move</div>
-          <div class="metric-val ${moveClass}">${movePfx}${sig.move}%</div>
-          <div class="metric-sub">Current</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Upside Est.</div>
-          <div class="metric-val val-blue">${sig.upside}</div>
-          <div class="metric-sub">AI estimate</div>
-        </div>
-        <div class="metric-card" style="grid-column:span 2">
-          <div class="metric-label">Confidence — ${sig.confidence}%</div>
-          <div class="conf-track"><div class="conf-fill ${confClass}" style="width:${sig.confidence}%"></div></div>
+        <div class="hero-metrics">
+          <div class="metric-card"><div class="metric-label">Move</div><div class="metric-val ${moveClass}">${movePfx}${sig.move}%</div><div class="metric-sub">Current</div></div>
+          <div class="metric-card"><div class="metric-label">Upside</div><div class="metric-val val-blue">${sig.upside}</div><div class="metric-sub">AI estimate</div></div>
+          <div class="metric-card" style="grid-column:span 2"><div class="metric-label">Confidence — ${sig.confidence}%</div><div class="conf-track"><div class="conf-fill ${confClass}" style="width:${sig.confidence}%"></div></div></div>
         </div>
       </div>
-    </div>
-    <div class="section" style="animation-delay:.05s">
-      <div class="section-title">Claude's Reasoning</div>
-      <div class="reasoning-box">${sig.reasoning}</div>
-    </div>
-    <div class="section" style="animation-delay:.10s">
-      <div class="section-title">${sig.sources.length} Source${sig.sources.length !== 1 ? 's' : ''} — Tap to verify</div>
-      <div class="sources-grid">${sourcesHtml}</div>
-    </div>
-    <div class="section" style="animation-delay:.15s">
-      <div class="section-title">Prediction Outcome</div>
-      ${outcomeHtml}
+
+      <div class="quick-actions">
+        <button class="qa-btn ${pinned ? 'pinned' : ''}" onclick="togglePinSignal('${sig.id}')">
+          ${pinned ? '📌 Pinned' : '📌 Pin'}
+        </button>
+        <button class="qa-btn" onclick="archiveThisSignal('${sig.id}')">✕ Archive</button>
+        <button class="qa-btn" onclick="toggleNote('${sig.id}')">✏ Note</button>
+      </div>
+
+      <div id="noteSection-${sig.id}" style="display:${note ? '' : 'none'};margin-bottom:20px">
+        <div class="note-box">
+          <textarea class="note-input" id="noteInput-${sig.id}" placeholder="Add your thoughts on this signal...">${note}</textarea>
+          <button class="note-save-btn" onclick="saveNoteFromUI('${sig.id}')">Save note</button>
+        </div>
+      </div>
+
+      <div class="section" style="animation-delay:.04s">
+        <div class="section-title">Price Chart</div>
+        <div class="chart-wrap">
+          <div class="chart-header">
+            <div class="chart-title">${sig.ticker} — since signal</div>
+            <div class="chart-toggle">
+              <div class="chart-btn ${window.activeChartMode==='line'?'on':''}" onclick="switchChart('${sig.id}','line')">Line</div>
+              <div class="chart-btn ${window.activeChartMode==='candle'?'on':''}" onclick="switchChart('${sig.id}','candle')">Candle</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap" id="chartWrap-${sig.id}">
+            <div class="chart-loading" id="chartLoading-${sig.id}">⟳ Loading chart...</div>
+            <canvas id="chartCanvas-${sig.id}" class="chart-canvas" style="display:none"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="animation-delay:.08s">
+        <div class="section-title">Claude's Reasoning</div>
+        <div class="reasoning-box">${sig.reasoning}</div>
+      </div>
+
+      <div class="section" style="animation-delay:.12s">
+        <div class="section-title">${sig.sources.length} Source${sig.sources.length!==1?'s':''} — Tap to verify</div>
+        <div class="sources-grid">${sourcesHtml}</div>
+      </div>
+
+      <div class="section" style="animation-delay:.16s">
+        <div class="section-title">Prediction Outcome</div>
+        ${outcomeHtml}
+      </div>
     </div>`;
 
   document.getElementById('detailArea').scrollTop = 0;
   const el = document.querySelector(`[data-id="${id}"]`);
   if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+  // Load chart
+  loadChart(sig.id, sig.ticker, sig.scannedAt);
 };
 
+// ── Quick action handlers ─────────────────────────────────────
+window.togglePinSignal = function(id) { togglePin(id); window.renderDetail(id); renderSidebar(); };
+window.archiveThisSignal = function(id) { archiveSignal(id); renderFeed(); renderSidebar(); };
+window.toggleNote = function(id) {
+  const s = document.getElementById(`noteSection-${id}`);
+  if (s) s.style.display = s.style.display === 'none' ? '' : 'none';
+};
+window.saveNoteFromUI = function(id) {
+  const inp = document.getElementById(`noteInput-${id}`);
+  if (!inp) return;
+  saveNote(id, inp.value);
+  const btn = inp.nextElementSibling;
+  if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => { btn.textContent = 'Save note'; }, 1500); }
+};
+
+// ════════════════════════════════════════════════════════════
+//  CHART
+// ════════════════════════════════════════════════════════════
+window.switchChart = function(id, mode) {
+  window.activeChartMode = mode;
+  const sig = loadSignals().find(s => s.id === id);
+  if (!sig) return;
+  document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  loadChart(id, sig.ticker, sig.scannedAt);
+};
+
+async function loadChart(id, ticker, scannedAt) {
+  const loading = document.getElementById(`chartLoading-${id}`);
+  const canvas  = document.getElementById(`chartCanvas-${id}`);
+  if (!loading || !canvas) return;
+
+  loading.style.display = 'flex'; canvas.style.display = 'none';
+
+  try {
+    const data = await fetchOHLCV(ticker, '1d', '5m');
+    if (!data || !data.length) { loading.textContent = 'Chart data unavailable'; return; }
+
+    // Filter to data after signal fired
+    const signalTime = new Date(scannedAt).getTime();
+    const filtered   = data.filter(d => d.t >= signalTime - 5 * 60 * 1000);
+    const plotData   = filtered.length >= 3 ? filtered : data.slice(-40);
+
+    loading.style.display = 'none'; canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    canvas.width  = canvas.offsetWidth  || 300;
+    canvas.height = canvas.offsetHeight || 160;
+
+    if (window.activeChartMode === 'candle') {
+      drawCandlestick(ctx, plotData, canvas.width, canvas.height);
+    } else {
+      drawLineChart(ctx, plotData, canvas.width, canvas.height);
+    }
+  } catch (e) {
+    loading.textContent = 'Chart unavailable';
+    console.warn('[SIGNAL] Chart error:', e.message);
+  }
+}
+
+function drawLineChart(ctx, data, w, h) {
+  const pad = { t: 10, r: 8, b: 24, l: 44 };
+  const pw  = w - pad.l - pad.r;
+  const ph  = h - pad.t - pad.b;
+  const prices = data.map(d => d.c);
+  const minP = Math.min(...prices), maxP = Math.max(...prices);
+  const range = maxP - minP || 1;
+  const isUp  = prices[prices.length - 1] >= prices[0];
+  const color = isUp ? getComputedStyle(document.documentElement).getPropertyValue('--green').trim() : getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (ph / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(200,210,230,.3)'; ctx.font = '9px IBM Plex Mono';
+    const val = maxP - (range / 4) * i;
+    ctx.fillText(`$${val.toFixed(2)}`, 0, y + 3);
+  }
+
+  // Fill gradient
+  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ph);
+  grad.addColorStop(0, `${color}33`); grad.addColorStop(1, `${color}00`);
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = pad.l + (i / (data.length - 1)) * pw;
+    const y = pad.t + ((maxP - d.c) / range) * ph;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(pad.l + pw, pad.t + ph); ctx.lineTo(pad.l, pad.t + ph); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // Line
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = pad.l + (i / (data.length - 1)) * pw;
+    const y = pad.t + ((maxP - d.c) / range) * ph;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Time labels
+  ctx.fillStyle = 'rgba(200,210,230,.3)'; ctx.font = '8px IBM Plex Mono';
+  [0, Math.floor(data.length / 2), data.length - 1].forEach(i => {
+    if (!data[i]) return;
+    const x   = pad.l + (i / (data.length - 1)) * pw;
+    const lbl = new Date(data[i].t).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'America/New_York' });
+    ctx.fillText(lbl, x - 14, h - 6);
+  });
+}
+
+function drawCandlestick(ctx, data, w, h) {
+  const pad   = { t: 10, r: 8, b: 24, l: 44 };
+  const pw    = w - pad.l - pad.r;
+  const ph    = h - pad.t - pad.b;
+  const highs = data.map(d => d.h), lows = data.map(d => d.l);
+  const maxP  = Math.max(...highs), minP = Math.min(...lows);
+  const range = maxP - minP || 1;
+  const green = getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
+  const red   = getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (ph / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(200,210,230,.3)'; ctx.font = '9px IBM Plex Mono';
+    ctx.fillText(`$${(maxP - (range / 4) * i).toFixed(2)}`, 0, y + 3);
+  }
+
+  const cw = Math.max(2, (pw / data.length) - 1);
+  data.forEach((d, i) => {
+    const x     = pad.l + (i / data.length) * pw + cw / 2;
+    const yHigh = pad.t + ((maxP - d.h) / range) * ph;
+    const yLow  = pad.t + ((maxP - d.l) / range) * ph;
+    const yOpen = pad.t + ((maxP - d.o) / range) * ph;
+    const yClose= pad.t + ((maxP - d.c) / range) * ph;
+    const isUp  = d.c >= d.o;
+    const col   = isUp ? green : red;
+
+    ctx.strokeStyle = col; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, yHigh); ctx.lineTo(x, yLow); ctx.stroke();
+    ctx.fillStyle = isUp ? `${col}88` : col;
+    const bodyTop = Math.min(yOpen, yClose);
+    const bodyH   = Math.max(1, Math.abs(yClose - yOpen));
+    ctx.fillRect(x - cw / 2, bodyTop, cw, bodyH);
+    ctx.strokeRect(x - cw / 2, bodyTop, cw, bodyH);
+  });
+
+  ctx.fillStyle = 'rgba(200,210,230,.3)'; ctx.font = '8px IBM Plex Mono';
+  [0, Math.floor(data.length / 2), data.length - 1].forEach(i => {
+    if (!data[i]) return;
+    const x = pad.l + (i / data.length) * pw + cw / 2;
+    const lbl = new Date(data[i].t).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'America/New_York' });
+    ctx.fillText(lbl, x - 14, h - 6);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  SELECT SIGNAL
+// ════════════════════════════════════════════════════════════
 window.selectSignal = function(id) { window.renderDetail(id); };
 
-// ─── LIVE FEED ────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  LIVE FEED
+// ════════════════════════════════════════════════════════════
 window.renderFeed = function() {
   if (window.activeTab !== 'feed') return;
   let sigs = getSignalsToday();
   if (window.activeFilter !== 'all') sigs = sigs.filter(s => s.urgency === window.activeFilter);
   document.getElementById('feedBadge').textContent = sigs.length;
 
-  if (sigs.length === 0) {
-    renderSidebar();
-    showRichEmptyState();
-    return;
-  }
+  if (!sigs.length) { renderSidebar(); showRichEmptyState(); return; }
   renderSidebar();
   if (!window.activeSignalId || !sigs.find(s => s.id === window.activeSignalId))
-    window.activeSignalId = sigs.sort((a,b) => { const o={critical:0,high:1,medium:2}; return o[a.urgency]-o[b.urgency]; })[0].id;
+    window.activeSignalId = getSortedTodaySignals()[0].id;
   window.renderDetail(window.activeSignalId);
 };
 
 async function showRichEmptyState() {
   const detail = document.getElementById('detailArea');
   if (!detail) return;
-
-  // Show countdown immediately
-  const msLeft  = msUntilNextMarketOpen();
-  const tot     = Math.floor(msLeft / 1000);
-  const hh      = Math.floor(tot / 3600);
-  const mm      = Math.floor((tot % 3600) / 60);
-  const cdStr   = hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
-  const isOpen  = isMarketOpen();
-
-  detail.innerHTML = `<div class="es-wrap">
+  const ms  = msUntilNextMarketOpen();
+  const tot = Math.floor(ms / 1000);
+  const hh  = Math.floor(tot / 3600), mm = Math.floor((tot % 3600) / 60);
+  const cd  = hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+  detail.innerHTML = `<div class="es-wrap slide-up">
     <div class="es-header">
       <div class="es-title">No signals yet today</div>
-      <div class="es-sub">${isOpen ? 'Market open · scanning every 5 min' : 'Market closed · opens in ' + cdStr}</div>
+      <div class="es-sub">${isMarketOpen() ? 'Market open · scanning every '+((getSetting('scanInterval')||5))+' min' : 'Market closed · opens in '+cd}</div>
     </div>
     <div id="esPerfRow"></div>
-    <div id="esPriceRows"><div class="es-loading">⟳ Loading recent signals...</div></div>
+    <div id="esPriceRows"><div class="empty-state" style="height:36vh"><div class="empty-icon">⟳</div><div class="empty-body">Loading recent signals...</div></div></div>
   </div>`;
 
-  // Async: fetch live prices + build content
   try {
     const { priceRows, acc, count } = await buildEmptyStateContent();
     const perfEl = document.getElementById('esPerfRow');
     const rowsEl = document.getElementById('esPriceRows');
     if (!perfEl || !rowsEl) return;
-
     if (acc && count >= 3) {
       perfEl.innerHTML = `<div class="es-perf">
-        <div class="es-perf-card"><div class="es-perf-label">Hit Rate (7d)</div><div class="es-perf-val val-green">${acc.overall}%</div></div>
+        <div class="es-perf-card"><div class="es-perf-label">Hit Rate 7d</div><div class="es-perf-val val-green">${acc.overall}%</div></div>
         <div class="es-perf-card"><div class="es-perf-label">Signals</div><div class="es-perf-val val-blue">${acc.total}</div></div>
-        <div class="es-perf-card"><div class="es-perf-label">Avg Hit</div><div class="es-perf-val val-green">${acc.avgHitMove !== null ? '+' + acc.avgHitMove + '%' : '—'}</div></div>
+        <div class="es-perf-card"><div class="es-perf-label">Avg Hit</div><div class="es-perf-val val-green">${acc.avgHitMove !== null ? '+'+acc.avgHitMove+'%' : '—'}</div></div>
       </div>`;
     }
-
-    if (count > 0) {
-      rowsEl.innerHTML = \`<div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Recent signals — live prices</div>\${priceRows}\`;
-    } else {
-      rowsEl.innerHTML = \`<div class="empty-state" style="height:40vh"><div class="empty-icon">📡</div><div class="empty-title">No recent signals</div><div class="empty-body">The scanner will run automatically during market hours (9AM–8PM ET, every 5 min).</div></div>\`;
-    }
-  } catch(e) {
-    console.warn('[SIGNAL] Empty state fetch error:', e);
-  }
+    rowsEl.innerHTML = count > 0
+      ? `<div class="es-section-label">Recent signals — live prices</div>${priceRows}`
+      : `<div class="empty-state" style="height:36vh"><div class="empty-icon">📡</div><div class="empty-title">No recent signals</div><div class="empty-body">The scanner runs automatically during market hours.</div></div>`;
+  } catch(e) { console.warn('[SIGNAL] Empty state error:', e); }
 }
 
-// ─── 24H TAB ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  24H TAB
+// ════════════════════════════════════════════════════════════
 function render24h() {
-  const et  = getNowET();
-  const day = et.getDay();
-  const isWeekend = (day === 0 || day === 6);
-  const sigs = getSignalsFor24hTab();
-  const label = isWeekend ? "Friday's Activity" : "Last 24 Hours";
+  const et = getNowET(); const day = et.getDay();
+  const isWeekend = day === 0 || day === 6;
+  const sigs  = getSignalsFor24hTab();
   document.getElementById('h24Badge').textContent = sigs.length;
-  if (sigs.length === 0) {
-    document.getElementById('detailArea').innerHTML = `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No signals in ${label.toLowerCase()}</div><div class="empty-body">${isWeekend ? "Friday's signals will appear here on weekends." : "Signals from the past 24 hours will appear here grouped by hour."}</div></div>`;
+  if (!sigs.length) {
+    document.getElementById('detailArea').innerHTML = `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">${isWeekend ? "No signals from Friday" : "No signals in last 24h"}</div><div class="empty-body">${isWeekend ? "Friday's signals will appear here on weekends." : "Signals will appear here grouped by hour."}</div></div>`;
     return;
   }
   const groups = {};
   sigs.forEach(s => {
-    const et  = new Date(new Date(s.scannedAt).toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const key = et.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', timeZone:'America/New_York' }).replace(/:\d\d\s/,' ');
+    const et2 = new Date(new Date(s.scannedAt).toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const key = et2.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',timeZone:'America/New_York'}).replace(/:\d\d\s/,' ');
     if (!groups[key]) groups[key] = [];
     groups[key].push(s);
   });
@@ -660,20 +985,19 @@ function render24h() {
   for (const [label, group] of Object.entries(groups)) {
     html += `<div class="hour-group"><div class="hour-label">${label}</div>`;
     group.forEach(s => {
-      const b = s.outcome==='hit' ? `<span class="srm-badge badge-hit">HIT</span>`
-              : s.outcome==='miss'? `<span class="srm-badge badge-miss">MISS</span>`
-              : `<span class="srm-badge badge-pend">PEND</span>`;
+      const b = s.outcome==='hit'?'<span class="srm-badge badge-hit">HIT</span>':s.outcome==='miss'?'<span class="srm-badge badge-miss">MISS</span>':'<span class="srm-badge badge-pend">PEND</span>';
       html += `<div class="signal-row-mini urg-${s.urgency}" onclick="selectSignalDetail('${s.id}')">
-        <div class="srm-ticker">${s.ticker}</div>
-        <div class="srm-headline">${s.headline}</div>
+        <div class="srm-ticker">${s.ticker}</div><div class="srm-headline">${s.headline}</div>
         <div class="srm-move ${s.move>=0?'move-up':'move-dn'}">${s.move>=0?'+':''}${s.move}%</div>${b}</div>`;
     });
     html += '</div>';
   }
-  document.getElementById('detailArea').innerHTML = `<div style="padding-bottom:16px">${html}</div>`;
+  document.getElementById('detailArea').innerHTML = `<div class="slide-up">${html}</div>`;
 }
 
-// ─── HISTORY TAB ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  HISTORY TAB
+// ════════════════════════════════════════════════════════════
 function renderHistory() {
   const rangeMap = { '24h': getSignalsLast24h, '7d': getSignalsLast7d, '30d': getSignalsLast30d };
   const sigs     = (rangeMap[window.historyRange] || getSignalsLast7d)();
@@ -683,114 +1007,85 @@ function renderHistory() {
       <div class="range-btn ${window.historyRange==='7d'?'on':''}" onclick="setHistoryRange('7d')">7 Days</div>
       <div class="range-btn ${window.historyRange==='30d'?'on':''}" onclick="setHistoryRange('30d')">30 Days</div>
     </div>
-    <span class="history-count">${sigs.length} signal${sigs.length!==1?'s':''}</span>
+    <span style="font-size:10px;color:var(--muted)">${sigs.length} signal${sigs.length!==1?'s':''}</span>
     <button class="export-btn" onclick="doExportCSV()">↓ Export CSV</button>
   </div>`;
-  if (sigs.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">No signals in this range</div><div class="empty-body">Signals will build up here as the scanner runs.</div></div>`;
+  if (!sigs.length) {
+    html += `<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-title">No signals in this range</div><div class="empty-body">Signals build up here as the scanner runs.</div></div>`;
   } else {
     sigs.forEach(s => {
-      const b   = s.outcome==='hit'?`<span class="srm-badge badge-hit">HIT</span>`:s.outcome==='miss'?`<span class="srm-badge badge-miss">MISS</span>`:`<span class="srm-badge badge-pend">PEND</span>`;
-      const dt  = new Date(s.scannedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'});
+      const b  = s.outcome==='hit'?'<span class="srm-badge badge-hit">HIT</span>':s.outcome==='miss'?'<span class="srm-badge badge-miss">MISS</span>':'<span class="srm-badge badge-pend">PEND</span>';
+      const dt = new Date(s.scannedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'America/New_York'});
       html += `<div class="signal-row-mini urg-${s.urgency}" onclick="selectSignalDetail('${s.id}')">
-        <div class="srm-ticker">${s.ticker}</div>
-        <div class="srm-headline">${s.headline}</div>
+        <div class="srm-ticker">${s.ticker}</div><div class="srm-headline">${s.headline}</div>
         <div class="srm-move ${s.move>=0?'move-up':'move-dn'}">${s.move>=0?'+':''}${s.move}%</div>
         ${b}<span style="font-size:9px;color:var(--muted);flex-shrink:0">${dt}</span></div>`;
     });
   }
-  document.getElementById('detailArea').innerHTML = `<div>${html}</div>`;
+  document.getElementById('detailArea').innerHTML = `<div class="slide-up">${html}</div>`;
 }
-
 window.setHistoryRange = function(r) { window.historyRange = r; renderHistory(); };
-window.doExportCSV = function() {
-  const rangeMap = { '24h': getSignalsLast24h, '7d': getSignalsLast7d, '30d': getSignalsLast30d };
-  exportCSV((rangeMap[window.historyRange] || getSignalsLast7d)());
-};
+window.doExportCSV = function() { const rm = {'24h':getSignalsLast24h,'7d':getSignalsLast7d,'30d':getSignalsLast30d}; exportCSV((rm[window.historyRange]||getSignalsLast7d)()); };
 
-// ─── SELECT FROM LIST (with back button) ─────────────────────
+// ════════════════════════════════════════════════════════════
+//  SELECT FROM LIST
+// ════════════════════════════════════════════════════════════
 window.selectSignalDetail = function(id) {
   window.renderDetail(id);
   const detail = document.getElementById('detailArea');
   const back   = document.createElement('button');
-  back.className = 'back-btn';
-  back.textContent = '← Back';
+  back.className = 'back-btn'; back.textContent = '← Back';
   back.onclick = () => renderActiveTab();
   detail.insertBefore(back, detail.firstChild);
 };
 
-// ─── ANALYTICS TAB ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  ANALYTICS
+// ════════════════════════════════════════════════════════════
 window.renderAnalytics = function() {
   if (window.activeTab !== 'analytics') return;
   const analytics = getAnalytics();
   const data      = analytics[window.analyticsPeriod] || analytics.allTime;
-  const labels    = { allTime:'All Time', today:'Today', h24:'24 Hours', d7:'7 Days', d30:'30 Days' };
+  const labels    = { allTime:'All Time', today:'Today', h24:'24h', d7:'7 Days', d30:'30 Days' };
 
-  let html = `<div class="analytics-wrap"><div class="period-toggle">
-    ${Object.entries(labels).map(([k,v]) => `<div class="period-btn ${window.analyticsPeriod===k?'on':''}" onclick="setAnalyticsPeriod('${k}')">${v}</div>`).join('')}
+  let html = `<div class="analytics-wrap slide-up"><div class="period-toggle">
+    ${Object.entries(labels).map(([k,v])=>`<div class="period-btn ${window.analyticsPeriod===k?'on':''}" onclick="setAnalyticsPeriod('${k}')">${v}</div>`).join('')}
   </div>`;
 
   if (!data) {
-    html += `<div class="no-data">No outcomes recorded yet for this period.<br>Outcomes are checked 1 hour after each signal fires.<br>Run the scanner during market hours to build data.</div>`;
+    html += `<div class="no-data">No outcomes recorded yet.<br>Outcomes are checked 1 hour after each signal fires.</div>`;
   } else {
     html += `<div class="stat-grid">
       <div class="stat-card"><div class="stat-card-label">Hit Rate</div><div class="stat-card-val val-green">${data.overall}%</div><div class="stat-card-sub">${data.total} outcomes</div></div>
       <div class="stat-card"><div class="stat-card-label">Hits</div><div class="stat-card-val val-green">${data.hits}</div><div class="stat-card-sub">of ${data.total}</div></div>
       <div class="stat-card"><div class="stat-card-label">Misses</div><div class="stat-card-val val-red">${data.misses}</div><div class="stat-card-sub">of ${data.total}</div></div>
-      <div class="stat-card"><div class="stat-card-label">Pending</div><div class="stat-card-val val-blue">${data.pending}</div><div class="stat-card-sub">awaiting check</div></div>
+      <div class="stat-card"><div class="stat-card-label">Pending</div><div class="stat-card-val val-blue">${data.pending}</div><div class="stat-card-sub">awaiting</div></div>
     </div>`;
-
     if (data.avgHitMove !== null || data.avgMissMove !== null) {
-      html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:24px">
-        <div class="stat-card"><div class="stat-card-label">Avg Hit Move</div><div class="stat-card-val val-green">${data.avgHitMove!==null?'+'+data.avgHitMove+'%':'—'}</div><div class="stat-card-sub">actual move</div></div>
-        <div class="stat-card"><div class="stat-card-label">Avg Miss Move</div><div class="stat-card-val val-red">${data.avgMissMove!==null?data.avgMissMove+'%':'—'}</div><div class="stat-card-sub">actual move</div></div>
+      html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">
+        <div class="stat-card"><div class="stat-card-label">Avg Hit Move</div><div class="stat-card-val val-green">${data.avgHitMove!==null?'+'+data.avgHitMove+'%':'—'}</div></div>
+        <div class="stat-card"><div class="stat-card-label">Avg Miss Move</div><div class="stat-card-val val-red">${data.avgMissMove!==null?data.avgMissMove+'%':'—'}</div></div>
       </div>`;
     }
-
     const tierColors = { critical:'var(--red)', high:'var(--amber)', medium:'var(--green)' };
     html += `<div class="analytics-section"><div class="analytics-title">By Confidence Tier</div>`;
     for (const [tier, d] of Object.entries(data.byUrgency)) {
       if (!d) continue;
-      html += `<div class="bar-row"><div class="bar-label">${tier.charAt(0).toUpperCase()+tier.slice(1)}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${tierColors[tier]}"></div></div>
-        <div class="bar-pct" style="color:${tierColors[tier]}">${d.pct}%</div>
-        <div class="bar-count">${d.total}</div></div>`;
+      html += `<div class="bar-row"><div class="bar-label">${tier.charAt(0).toUpperCase()+tier.slice(1)}</div><div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${tierColors[tier]}"></div></div><div class="bar-pct" style="color:${tierColors[tier]}">${d.pct}%</div><div class="bar-count">${d.total}</div></div>`;
     }
     html += '</div>';
-
     html += `<div class="analytics-section"><div class="analytics-title">By Catalyst Type</div>`;
-    for (const [cat, d] of Object.entries(data.byCatalyst).sort((a,b) => b[1].pct-a[1].pct)) {
-      const color = d.pct >= 65 ? 'var(--green)' : d.pct >= 45 ? 'var(--amber)' : 'var(--red)';
-      html += `<div class="bar-row"><div class="bar-label">${cat}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${color}"></div></div>
-        <div class="bar-pct" style="color:${color}">${d.pct}%</div>
-        <div class="bar-count">${d.total}</div></div>`;
+    for (const [cat, d] of Object.entries(data.byCatalyst).sort((a,b)=>b[1].pct-a[1].pct)) {
+      const color = d.pct>=65?'var(--green)':d.pct>=45?'var(--amber)':'var(--red)';
+      html += `<div class="bar-row"><div class="bar-label">${cat}</div><div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${color}"></div></div><div class="bar-pct" style="color:${color}">${d.pct}%</div><div class="bar-count">${d.total}</div></div>`;
     }
     html += '</div>';
-
     if (Object.keys(data.byDay).length > 0) {
       html += `<div class="analytics-section"><div class="analytics-title">By Day of Week</div>`;
       for (const day of ['Mon','Tue','Wed','Thu','Fri']) {
         const d = data.byDay[day]; if (!d) continue;
-        const color = d.pct >= 65 ? 'var(--green)' : d.pct >= 45 ? 'var(--amber)' : 'var(--red)';
-        html += `<div class="bar-row"><div class="bar-label">${day}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${color}"></div></div>
-          <div class="bar-pct" style="color:${color}">${d.pct}%</div>
-          <div class="bar-count">${d.total}</div></div>`;
-      }
-      html += '</div>';
-    }
-
-    if (Object.keys(data.byHour).length > 0) {
-      html += `<div class="analytics-section"><div class="analytics-title">By Time of Day (ET)</div>`;
-      for (const h of Object.keys(data.byHour).map(Number).sort((a,b)=>a-b)) {
-        const d = data.byHour[h];
-        const label = `${h%12||12}${h<12?'am':'pm'}`;
-        const color = d.pct >= 65 ? 'var(--green)' : d.pct >= 45 ? 'var(--amber)' : 'var(--red)';
-        html += `<div class="bar-row"><div class="bar-label">${label}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${color}"></div></div>
-          <div class="bar-pct" style="color:${color}">${d.pct}%</div>
-          <div class="bar-count">${d.total}</div></div>`;
+        const color = d.pct>=65?'var(--green)':d.pct>=45?'var(--amber)':'var(--red)';
+        html += `<div class="bar-row"><div class="bar-label">${day}</div><div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${color}"></div></div><div class="bar-pct" style="color:${color}">${d.pct}%</div><div class="bar-count">${d.total}</div></div>`;
       }
       html += '</div>';
     }
@@ -798,10 +1093,202 @@ window.renderAnalytics = function() {
   html += '</div>';
   document.getElementById('detailArea').innerHTML = html;
 };
-
 window.setAnalyticsPeriod = function(p) { window.analyticsPeriod = p; window.renderAnalytics(); };
 
-// ─── RENDER ACTIVE TAB ───────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════════════════════
+function renderSettings() {
+  const s       = loadSettings();
+  const saved   = getApiKey();
+  const isConn  = !!saved;
+  const theme   = typeof getTheme === 'function' ? getTheme() : 'dark';
+  const notifOk = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  const lastScan= (() => { try { return localStorage.getItem(LAST_SCAN_KEY); } catch { return null; } })();
+  const scans   = (() => { try { return localStorage.getItem(SCAN_COUNT_KEY) || '0'; } catch { return '0'; } })();
+  const lastStr = lastScan ? new Date(lastScan).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}) + ' ET' : 'Never';
+
+  document.getElementById('detailArea').innerHTML = `<div class="settings-wrap slide-up">
+
+    <!-- API KEY -->
+    <div class="settings-section">
+      <div class="settings-label">API Connection</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <div class="settings-field-label">Anthropic API Key</div>
+          <input class="settings-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-••••••••••" autocomplete="off" value="${isConn ? '••••••••••••••••••••' : ''}"/>
+        </div>
+        <button class="btn-connect-full" id="connectBtn" onclick="connectFromSettings()">
+          ${isConn ? '✓ Connected — tap to update' : 'Connect'}
+        </button>
+        <div class="connect-status" id="connectStatus">${isConn ? 'Connected.' : ''}</div>
+        <div class="settings-meta" style="margin-top:12px">
+          Model: <span>claude-sonnet-4-20250514</span><br>
+          Est. cost per scan: <span>~$0.02–$0.05</span><br>
+          Last scan: <span>${lastStr}</span><br>
+          Total scans: <span>${scans}</span>
+        </div>
+        <div class="settings-hint">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>. Your key is stored only in this browser.</div>
+      </div>
+    </div>
+
+    <!-- SCANNER -->
+    <div class="settings-section">
+      <div class="settings-label">Scanner</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <div class="settings-field-label">Scan interval</div>
+          <div class="preset-group">
+            ${[1,2,5,10].map(v=>`<div class="preset-btn ${s.scanInterval===v?'on':''}" onclick="updateSetting('scanInterval',${v});renderSettings()">${v} min</div>`).join('')}
+          </div>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Market hours (ET)</div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <select class="settings-input" style="flex:1" id="openHour" onchange="updateSetting('marketOpenHour',parseInt(this.value))">
+              ${Array.from({length:14},(_,i)=>i+7).map(h=>`<option value="${h}" ${s.marketOpenHour===h?'selected':''}>${h}:00</option>`).join('')}
+            </select>
+            <span style="color:var(--muted);font-size:11px">to</span>
+            <select class="settings-input" style="flex:1" id="closeHour" onchange="updateSetting('marketCloseHour',parseInt(this.value))">
+              ${Array.from({length:10},(_,i)=>i+14).map(h=>`<option value="${h}" ${s.marketCloseHour===h?'selected':''}>${h}:00</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Catalysts to scan</div>
+          <div class="cat-group">
+            ${[['fda','FDA'],['earn','Earnings'],['ma','M&A'],['short','Short Squeeze'],['k8','8-K'],['macro','Other']].map(([k,label])=>
+              `<div class="cat-toggle ${s.catalysts[k]?'on':''}" onclick="toggleCatalyst('${k}')">${label}</div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNAL FILTERS -->
+    <div class="settings-section">
+      <div class="settings-label">Signal Filters</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <div class="settings-field-label">Market cap range</div>
+          <div class="preset-group">
+            ${MCAP_PRESETS.map(p=>`<div class="preset-btn ${s.mcapPreset===p.id?'on':''}" onclick="updateSetting('mcapPreset','${p.id}');renderSettings()">${p.label}</div>`).join('')}
+          </div>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Minimum confidence: <strong style="color:var(--blue)" id="confVal">${s.minConfidence}%</strong></div>
+          <input class="settings-slider" type="range" min="50" max="95" step="5" value="${s.minConfidence}"
+            oninput="document.getElementById('confVal').textContent=this.value+'%'"
+            onchange="updateSetting('minConfidence',parseInt(this.value))"/>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Minimum move potential: <strong style="color:var(--blue)" id="moveVal">${s.minMove}%</strong></div>
+          <input class="settings-slider" type="range" min="5" max="30" step="5" value="${s.minMove}"
+            oninput="document.getElementById('moveVal').textContent=this.value+'%'"
+            onchange="updateSetting('minMove',parseInt(this.value))"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISPLAY -->
+    <div class="settings-section">
+      <div class="settings-label">Display</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <div class="settings-field-label">Theme</div>
+          <button class="btn-connect-full" id="themeToggleBtn" onclick="toggleTheme();renderSettings()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
+            ${theme === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
+          </button>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Accent color</div>
+          <div class="color-group">
+            <div class="color-swatch sw-blue ${s.accentColor==='blue'?'on':''}" onclick="updateSetting('accentColor','blue');renderSettings()" title="Blue"></div>
+            <div class="color-swatch sw-green ${s.accentColor==='green'?'on':''}" onclick="updateSetting('accentColor','green');renderSettings()" title="Green"></div>
+            <div class="color-swatch sw-purple ${s.accentColor==='purple'?'on':''}" onclick="updateSetting('accentColor','purple');renderSettings()" title="Purple"></div>
+            <div class="color-swatch sw-gold ${s.accentColor==='gold'?'on':''}" onclick="updateSetting('accentColor','gold');renderSettings()" title="Gold"></div>
+          </div>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Font size</div>
+          <div class="preset-group">
+            ${['small','medium','large'].map(f=>`<div class="preset-btn ${s.fontSize===f?'on':''}" onclick="updateSetting('fontSize','${f}');renderSettings()">${f.charAt(0).toUpperCase()+f.slice(1)}</div>`).join('')}
+          </div>
+        </div>
+        <div class="settings-field">
+          <div class="settings-field-label">Compact mode</div>
+          <div class="preset-group">
+            <div class="preset-btn ${!s.compactMode?'on':''}" onclick="updateSetting('compactMode',false);renderSettings()">Off</div>
+            <div class="preset-btn ${s.compactMode?'on':''}" onclick="updateSetting('compactMode',true);renderSettings()">On</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="settings-section">
+      <div class="settings-label">Notifications</div>
+      <div class="settings-card">
+        <div class="settings-field-label">Background alerts when app is not visible</div>
+        <button class="btn-connect-full" id="notifBtn" onclick="requestNotifFromSettings()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
+          ${notifOk ? '✓ Notifications enabled' : '🔔 Enable notifications'}
+        </button>
+        <div class="settings-hint">Works on desktop and Android Chrome. On iPhone, add the app to your home screen first, then enable here.</div>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="settings-section">
+      <div class="settings-label">Data</div>
+      <div class="settings-card">
+        <button class="btn-danger" onclick="confirmClearData()">🗑 Clear all signals + history</button>
+        <button class="btn-secondary" onclick="confirmResetSettings()">↺ Reset settings to default</button>
+      </div>
+    </div>
+
+  </div>`;
+
+  // Wire input focus
+  const inp = document.getElementById('apiKeyInput');
+  if (inp) inp.addEventListener('focus', () => { if (inp.value.startsWith('•')) inp.value = ''; });
+}
+
+window.connectFromSettings = function() {
+  const inp = document.getElementById('apiKeyInput');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val || val.startsWith('•')) { document.getElementById('connectStatus').textContent = 'Paste your API key first.'; document.getElementById('connectStatus').style.color = 'var(--red)'; return; }
+  try { localStorage.setItem(API_KEY_STORAGE, val); } catch(_) {}
+  const btn = document.getElementById('connectBtn');
+  if (btn) { btn.textContent = '✓ Connected'; btn.style.background = 'var(--green)'; btn.style.color = '#0a0c11'; }
+  const st = document.getElementById('connectStatus');
+  if (st) { st.textContent = 'API key saved.'; st.style.color = 'var(--green)'; }
+};
+
+window.toggleCatalyst = function(key) {
+  const s = loadSettings();
+  s.catalysts[key] = !s.catalysts[key];
+  saveSettings(s);
+  renderSettings();
+};
+
+window.requestNotifFromSettings = async function() {
+  const granted = await requestNotificationPermission();
+  const btn = document.getElementById('notifBtn');
+  if (btn) { btn.textContent = granted ? '✓ Notifications enabled' : '✗ Permission denied — check browser settings'; btn.style.color = granted ? 'var(--green)' : 'var(--red)'; }
+};
+
+window.confirmClearData = function() {
+  if (confirm('Clear all signals and history? This cannot be undone.')) { clearAllData(); renderSettings(); renderFeed(); renderSidebar(); }
+};
+
+window.confirmResetSettings = function() {
+  if (confirm('Reset all settings to default?')) { resetSettings(); renderSettings(); }
+};
+
+// ════════════════════════════════════════════════════════════
+//  RENDER ACTIVE TAB
+// ════════════════════════════════════════════════════════════
 window.renderActiveTab = function() {
   window.activeSignalId = null;
   const t = window.activeTab;
@@ -812,146 +1299,14 @@ window.renderActiveTab = function() {
   else if (t === 'settings')  renderSettings();
 };
 
-function renderSettings() {
-  const saved = (() => { try { return localStorage.getItem('signal_api_key') || ''; } catch { return ''; } })();
-  const isConnected = !!saved;
-  document.getElementById('detailArea').innerHTML = `
-    <div class="settings-wrap">
-      <div class="settings-section">
-        <div class="settings-label">API Key</div>
-        <div class="settings-card">
-          <div class="settings-field">
-            <div class="settings-field-label">Anthropic API Key</div>
-            <input class="settings-input" id="apiKeyInput" type="password"
-              placeholder="sk-ant-api03-••••••••••" autocomplete="off" value="${saved ? '••••••••••••••••••••' : ''}"/>
-          </div>
-          <button class="btn-connect-full" id="connectBtn" onclick="connectFromSettings()">
-            ${isConnected ? '✓ Connected — tap to update' : 'Connect'}
-          </button>
-          <div class="connect-status" id="connectStatus">${isConnected ? 'API key saved.' : ''}</div>
-          <div class="settings-hint">
-            Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a> → API Keys.<br>
-            Your key is stored only in this browser and sent directly to Anthropic. It is never stored on any server.
-          </div>
-        </div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-label">Appearance</div>
-        <div class="settings-card">
-          <div class="settings-field-label">Theme</div>
-          <button class="btn-connect-full" id="themeToggleBtn" onclick="toggleTheme()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
-            ${(typeof getTheme === 'function' ? getTheme() : 'dark') === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
-          </button>
-        </div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-label">Notifications</div>
-        <div class="settings-card">
-          <div class="settings-field-label">Background alerts</div>
-          <button class="btn-connect-full" id="notifBtn" onclick="requestNotifFromSettings()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
-            ${(typeof Notification !== 'undefined' && Notification.permission === 'granted') ? '✓ Notifications enabled' : '🔔 Enable notifications'}
-          </button>
-          <div class="settings-hint">When a new signal fires and you are not looking at the app, you will get a notification. Works on desktop and Android Chrome. On iPhone, add the app to your home screen first.</div>
-        </div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-label">Scanner</div>
-        <div class="settings-card">
-          <div style="font-size:11px;color:var(--text2);line-height:1.8">
-            Auto-scans every <strong style="color:var(--blue)">5 minutes</strong> during market hours<br>
-            <strong style="color:var(--blue)">9AM to 8PM ET</strong>, Monday to Friday<br><br>
-            Targets small/mid cap stocks <strong style="color:var(--blue)">$50M to $2B</strong> market cap<br>
-            with <strong style="color:var(--blue)">20%+</strong> single-day move potential<br><br>
-            Outcome checked <strong style="color:var(--blue)">60 minutes</strong> after each signal<br>
-            HIT = <strong style="color:var(--green)">5%+</strong> move in predicted direction
-          </div>
-        </div>
-      </div>
-    </div>`;
-
-  // Wire up input to show real placeholder on focus
-  const inp = document.getElementById('apiKeyInput');
-  if (inp) {
-    inp.addEventListener('focus', () => { if (inp.value.startsWith('•')) inp.value = ''; });
-  }
-}
-
-window.requestNotifFromSettings = async function() {
-  const granted = await requestNotificationPermission();
-  const btn = document.getElementById('notifBtn');
-  if (btn) {
-    btn.textContent = granted ? '✓ Notifications enabled' : '✗ Permission denied — check browser settings';
-    btn.style.color = granted ? 'var(--green)' : 'var(--red)';
-  }
-};
-
-window.connectFromSettings = function() {
-  const inp = document.getElementById('apiKeyInput');
-  if (!inp) return;
-  const val = inp.value.trim();
-  if (!val || val.startsWith('•')) {
-    document.getElementById('connectStatus').textContent = 'Paste your API key first.';
-    document.getElementById('connectStatus').style.color = 'var(--red)';
-    return;
-  }
-  try { localStorage.setItem('signal_api_key', val); } catch(_) {}
-  const btn = document.getElementById('connectBtn');
-  if (btn) { btn.textContent = '✓ Connected'; btn.style.background = 'var(--green)'; }
-  const st = document.getElementById('connectStatus');
-  if (st) { st.textContent = 'API key saved to this browser.'; st.style.color = 'var(--green)'; }
-};
-
-window.switchToSettings = function() {
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  const t = document.querySelector('[data-tab="settings"]');
-  if (t) t.classList.add('active');
-  window.activeTab = 'settings';
-  document.getElementById('filterGroup').style.display = 'none';
-  renderSettings();
-};
-
-// ─── INIT UI ─────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  // Wire tabs
-  document.querySelectorAll('.tab[data-tab]').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      window.activeTab = t.dataset.tab;
-      const fg = document.getElementById('filterGroup');
-      if (fg) fg.style.display = window.activeTab === 'feed' ? '' : 'none';
-      renderActiveTab();
-    });
-  });
-
-  // Wire filter chips
-  document.querySelectorAll('.chip[data-filter]').forEach(c => {
-    c.addEventListener('click', () => {
-      document.querySelectorAll('.chip[data-filter]').forEach(x => x.classList.remove('on'));
-      c.classList.add('active');
-      c.classList.add('on');
-      window.activeFilter = c.dataset.filter;
-      renderFeed();
-      renderSidebar();
-    });
-  });
-
-  renderFeed();
-  renderSidebar();
-
-  setInterval(() => {
-    if (window.activeTab === 'h24')       render24h();
-    if (window.activeTab === 'analytics') window.renderAnalytics();
-  }, 60000);
-});
-</script>
-<script>
-// ── Service Worker Registration ───────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  SERVICE WORKER
+// ════════════════════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('[SW] Registered:', reg.scope))
-      .catch(err => console.warn('[SW] Registration failed:', err));
+      .then(r => console.log('[SW] Registered:', r.scope))
+      .catch(e => console.warn('[SW] Failed:', e));
   });
 }
 </script>
