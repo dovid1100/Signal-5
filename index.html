@@ -472,11 +472,11 @@ canvas.chart-canvas{width:100%!important;height:100%!important}
   </div>
   <div class="hdr-right">
     <button class="btn btn-scan" id="scanBtn" onclick="
-  if(typeof triggerManualScan === 'function'){
-    triggerManualScan();
-  } else {
-    alert('JS not loaded. Check app.js filename in GitHub - must be lowercase app.js');
-  }
+  const key = typeof getApiKey === 'function' ? getApiKey() : 'none';
+  const scanning = typeof isScanning !== 'undefined' ? isScanning : 'unknown';
+  if(!key){ alert('No API key found. Please save your key in Settings first.'); return; }
+  if(scanning){ alert('Already scanning...'); return; }
+  triggerManualScan();
 ">▶ Scan Now</button>
   </div>
 </header>
