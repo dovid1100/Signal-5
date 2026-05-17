@@ -74,9 +74,7 @@ function releaseScanLock() { try { localStorage.removeItem(LOCK_KEY); } catch (_
 //  API KEY
 // ============================================================
 function getApiKey() {
-  const el  = document.getElementById('apiKeyInput');
-  const val = el ? el.value.trim() : '';
-  if (val) { try { localStorage.setItem(API_KEY_STORAGE, val); } catch (_) {} return val; }
+  // API key is saved via the Settings tab — read from localStorage
   try { return localStorage.getItem(API_KEY_STORAGE) || ''; } catch { return ''; }
 }
 
@@ -628,6 +626,8 @@ function updateScanCompleteUI(count, newSignals = []) {
   if (typeof window.renderSidebar   === 'function') window.renderSidebar();
   if (typeof window.flashNewSignals === 'function' && newSignals.length)
     window.flashNewSignals(newSignals.map(s => s.id));
+  // Fire background notification if app not in foreground
+  if (newSignals.length > 0) fireNotification(newSignals);
 }
 
 function refreshDetailIfActive(signalId) {
@@ -635,13 +635,125 @@ function refreshDetailIfActive(signalId) {
     window.renderDetail(signalId);
 }
 
+
+// ============================================================
+//  THEME (dark / light)
+// ============================================================
+const THEME_KEY = 'signal_theme';
+
+function getTheme() {
+  try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch { return 'dark'; }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀ Light Mode' : '☾ Dark Mode';
+}
+
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+}
+
+
+// ============================================================
+//  NOTIFICATIONS
+// ============================================================
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function fireNotification(signals) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible') return; // app is in foreground — no notification needed
+
+  signals.forEach(s => {
+    const urgencyEmoji = s.urgency === 'critical' ? '⚡' : s.urgency === 'high' ? '▲' : '●';
+    const n = new Notification(`${urgencyEmoji} ${s.ticker} — SIGNAL`, {
+      body: `${s.move >= 0 ? '+' : ''}${s.move}% · ${s.catalyst} · ${s.headline.slice(0, 80)}`,
+      icon: '/icon-192.png',
+      tag:  `signal-${s.id}`,
+      requireInteraction: s.urgency === 'critical'
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  });
+}
+
+
+// ============================================================
+//  WEEKEND 24H FIX
+//  Sat + Sun: show Friday's signals instead of empty
+// ============================================================
+function getSignalsFor24hTab() {
+  const et  = getNowET();
+  const day = et.getDay(); // 0=Sun, 6=Sat
+
+  if (day === 6 || day === 0) {
+    // Weekend — find last Friday's signals
+    const now = Date.now();
+    const daysBack = day === 6 ? 1 : 2; // Sat=1 day back, Sun=2 days back
+    const fridayStart = new Date(et);
+    fridayStart.setDate(fridayStart.getDate() - daysBack);
+    fridayStart.setHours(0, 0, 0, 0);
+    const fridayEnd = new Date(fridayStart);
+    fridayEnd.setHours(23, 59, 59, 999);
+    return loadSignals().filter(s => {
+      const t = new Date(s.scannedAt).getTime();
+      return t >= fridayStart.getTime() && t <= fridayEnd.getTime();
+    });
+  }
+
+  // Normal weekday — last 24 hours
+  return getSignalsLast24h();
+}
+
+
+// ============================================================
+//  EMPTY STATE — live prices for past signals
+// ============================================================
+async function buildEmptyStateContent() {
+  const past   = getSignalsLast7d().slice(0, 8); // up to 8 most recent
+  const acc    = calcAccuracy(getSignalsLast7d());
+  let priceRows = '';
+
+  if (past.length > 0) {
+    // Fetch live prices for each in parallel (best effort)
+    const prices = await Promise.allSettled(past.map(s => fetchStockPrice(s.ticker)));
+
+    priceRows = past.map((s, i) => {
+      const current = prices[i].status === 'fulfilled' ? prices[i].value : null;
+      let moveSince = null;
+      if (current && s.basePrice) {
+        moveSince = ((current - s.basePrice) / s.basePrice * 100).toFixed(1);
+      }
+      const sign    = moveSince >= 0 ? '+' : '';
+      const color   = moveSince === null ? 'var(--muted)' : moveSince >= 0 ? 'var(--green)' : 'var(--red)';
+      const dt      = new Date(s.scannedAt).toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'America/New_York' });
+      const outcome = s.outcome === 'hit' ? '✓' : s.outcome === 'miss' ? '✗' : '';
+      return `
+        <div class="es-row" onclick="selectSignal('${s.id}')">
+          <div class="es-ticker">${s.ticker}</div>
+          <div class="es-catalyst tag ${s.catalystTag}">${s.catalyst}</div>
+          <div class="es-date">${dt}</div>
+          <div class="es-move" style="color:${color}">${moveSince !== null ? sign + moveSince + '%' : '—'}</div>
+          <div class="es-outcome">${outcome}</div>
+        </div>`;
+    }).join('');
+  }
+
+  return { priceRows, acc, count: past.length };
+}
+
 // ============================================================
 //  INIT
 // ============================================================
 function initScanner() {
-  const saved = (() => { try { return localStorage.getItem(API_KEY_STORAGE); } catch { return ''; } })();
-  const inp   = document.getElementById('apiKeyInput');
-  if (saved && inp) inp.value = saved;
+  // API key managed via Settings tab
 
   const connectBtn = document.getElementById('connectBtn');
   if (connectBtn) {
@@ -659,6 +771,7 @@ function initScanner() {
   const scanBtn = document.getElementById('scanBtn');
   if (scanBtn) scanBtn.addEventListener('click', triggerManualScan);
 
+  applyTheme(getTheme());
   updateMarketStatusDisplay();
   nextScanAt = calcNextScanTime();
   startScheduler();
