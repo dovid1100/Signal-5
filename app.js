@@ -434,7 +434,7 @@ async function fetchWatchlistNews(ticker, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5', max_tokens: 600,
+        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
         tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }],
         messages: [{ role: 'user', content: `Find up to 3 recent news headlines about ${ticker} stock today. Return ONLY a JSON array, no markdown: [{"headline":"...","source":"...","url":"...","time":"..."}]. Return [] if nothing found.` }]
       })
@@ -465,7 +465,7 @@ async function aiSearch(query, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5', max_tokens: 600,
+        model: 'claude-haiku-4-5-20251001', max_tokens: 600,
         messages: [{ role: 'user', content: `You are a stock signal search assistant. The user is searching their signal history.\n\nUser query: "${query}"\n\nSignal history (id|ticker|urgency|catalyst|move|confidence|outcome|date):\n${summary}\n\nReturn ONLY a JSON object, no markdown:\n{"ids":["list of matching signal ids"],"explanation":"one short sentence explaining what you found"}\n\nMatch based on ticker name, catalyst type, urgency, outcome, move size, or date. Return up to 10 best matches.` }]
       })
     });
@@ -580,32 +580,14 @@ async function updatePortfolioPnlHeader() {
 // ============================================================
 //  CLAUDE PROMPT
 // ============================================================
-const BASE_SYSTEM_PROMPT = `You are an expert stock market signal scanner identifying stocks with potential for large single-day price moves.
+const BASE_SYSTEM_PROMPT = `Stock signal scanner. Find stocks with potential for large single-day moves.
 
-RULES:
-- Only return signals with a REAL verifiable source URL you actually found
-- Never return long-term thesis plays
-- Never pad — return [] if nothing qualifies
-- Reject catalysts older than 4 hours
-- Short squeezes require >15% short float AND confirmed unusual options activity
+RULES: Real URLs only. No long-term plays. Return [] if nothing qualifies. Reject catalysts >4h old.
+CONFIDENCE: 85-100=critical, 70-84=high, 50-69=medium, below min=skip.
+SOURCES: SEC EDGAR, Benzinga, Finviz, PR Newswire, BusinessWire, Seeking Alpha, StockAnalysis, OTC Markets, MarketWatch, Reuters, Motley Fool, Yahoo Finance.
 
-CONFIDENCE:
-85-100 = Hard binary catalyst + volume confirmation → urgency: critical
-70-84  = Strong catalyst, partial confirmation      → urgency: high
-50-69  = Developing situation                       → urgency: medium
-Below user minimum = DO NOT RETURN
-
-SOURCES (search in order):
-1. SEC EDGAR (sec.gov) 2. Benzinga (benzinga.com) 3. Finviz (finviz.com)
-4. PR Newswire (prnewswire.com) 5. BusinessWire (businesswire.com)
-6. Seeking Alpha (seekingalpha.com) 7. StockAnalysis (stockanalysis.com)
-8. OTC Markets (otcmarkets.com) 9. MarketWatch (marketwatch.com)
-10. Reuters (reuters.com) 11. Motley Fool (fool.com) 12. Yahoo Finance (finance.yahoo.com)
-
-Return ONLY a raw JSON array. No markdown. No explanation.
-
-Each signal MUST have ALL fields:
-{"ticker":"","company":"","urgency":"critical|high|medium","move":0,"volume":"","confidence":0,"upside":"","marketCap":"","time":"","headline":"","catalyst":"","catalystTag":"tag-fda|tag-earn|tag-ma|tag-short|tag-8k|tag-macro","reasoning":"","sources":[{"pub":"","icon":"","time":"","headline":"","url":""}]}
+Return ONLY a JSON array, no markdown:
+[{"ticker":"","company":"","urgency":"critical|high|medium","move":0,"volume":"","confidence":0,"upside":"","marketCap":"","time":"","headline":"","catalyst":"","catalystTag":"tag-fda|tag-earn|tag-ma|tag-short|tag-8k|tag-macro","reasoning":"","sources":[{"pub":"","icon":"","time":"","headline":"","url":""}]}]
 
 If nothing qualifies: []`;
 
@@ -636,7 +618,7 @@ async function callClaude(apiKey, userPrompt) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4000, system: buildSystemPrompt(), tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }], messages: [{ role: 'user', content: userPrompt }] })
+    body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 4000, system: buildSystemPrompt(), tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }], messages: [{ role: 'user', content: userPrompt }] })
   });
   if (!res.ok) { const b = await res.text(); throw new Error(`Claude API ${res.status}: ${b}`); }
   const data = await res.json();
