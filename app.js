@@ -434,7 +434,7 @@ async function fetchWatchlistNews(ticker, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 600,
+        model: 'claude-sonnet-4-5', max_tokens: 600,
         tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 2 }],
         messages: [{ role: 'user', content: `Find up to 3 recent news headlines about ${ticker} stock today. Return ONLY a JSON array, no markdown: [{"headline":"...","source":"...","url":"...","time":"..."}]. Return [] if nothing found.` }]
       })
@@ -465,7 +465,7 @@ async function aiSearch(query, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 600,
+        model: 'claude-sonnet-4-5', max_tokens: 600,
         messages: [{ role: 'user', content: `You are a stock signal search assistant. The user is searching their signal history.\n\nUser query: "${query}"\n\nSignal history (id|ticker|urgency|catalyst|move|confidence|outcome|date):\n${summary}\n\nReturn ONLY a JSON object, no markdown:\n{"ids":["list of matching signal ids"],"explanation":"one short sentence explaining what you found"}\n\nMatch based on ticker name, catalyst type, urgency, outcome, move size, or date. Return up to 10 best matches.` }]
       })
     });
@@ -636,7 +636,7 @@ async function callClaude(apiKey, userPrompt) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, system: buildSystemPrompt(), tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }], messages: [{ role: 'user', content: userPrompt }] })
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4000, system: buildSystemPrompt(), tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 8 }], messages: [{ role: 'user', content: userPrompt }] })
   });
   if (!res.ok) { const b = await res.text(); throw new Error(`Claude API ${res.status}: ${b}`); }
   const data = await res.json();
