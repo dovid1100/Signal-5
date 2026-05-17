@@ -23,7 +23,7 @@ html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-fami
   --purple:#B06EFF;--purple-dim:rgba(176,110,255,.12);
   --muted:rgba(200,210,230,.38);--muted2:rgba(200,210,230,.55);
   --text:#E8EDF5;--text2:rgba(232,237,245,.68);
-  --sidebar-w:72px;--header-h:54px;--subbar-h:38px;
+  --sidebar-w:72px;--header-h:54px;--subbar-h:38px;--header-gap:10px;
 }
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px)}
@@ -31,7 +31,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 /* ─ HEADER ─ */
 .header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--header-h);
   background:rgba(14,16,22,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--border2);
-  display:flex;align-items:center;padding:0 16px;gap:14px}
+  display:flex;align-items:center;padding:0 12px;gap:10px;overflow:hidden}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:9px;flex-shrink:0}
 .logo-pulse{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue);
@@ -52,7 +52,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
 .api-input{background:var(--surface2);border:1px solid var(--border2);border-radius:5px;
   padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted2);
-  width:185px;outline:none;transition:border-color .2s,color .2s}
+  width:160px;outline:none;transition:border-color .2s,color .2s}
 .api-input:focus{border-color:var(--blue);color:var(--text)}
 .api-input::placeholder{color:rgba(255,255,255,.18)}
 .btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;
@@ -297,7 +297,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 /* ─ TABLET ─ */
 @media(min-width:641px) and (max-width:1024px){
   :root{--sidebar-w:72px}
-  .api-input{width:155px}.btn-scan{display:none}
+  .hdr-stats .stat-pill:nth-child(n+4){display:none}
+  .hdr-stats .hdr-div:nth-child(n+4){display:none}
+  #lastScanTime{display:none}
+  .api-input{width:130px}.btn-scan{display:none}
   .detail-area{padding:20px 24px}
   .hero-ticker{font-size:26px}.hero-metrics{width:185px}.metric-val{font-size:17px}
   .stat-grid{grid-template-columns:1fr 1fr}
@@ -324,10 +327,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     <div class="stat-pill"><strong id="signalCount">0</strong>&nbsp;signals today</div>
     <div class="hdr-div"></div>
     <div class="hdr-cd">
-      <div class="hdr-cd-label">Next scan</div>
+      <div class="hdr-cd-label">Next</div>
       <div class="hdr-cd-val" id="countdown">--:--</div>
     </div>
-    <div id="lastScanTime" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em"></div>
+    <div id="lastScanTime" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:none"></div>
   </div>
   <div class="mobile-status">
     <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0"></div>
