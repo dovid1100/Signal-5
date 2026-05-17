@@ -261,7 +261,13 @@ async function triggerScan({ isPreload = false, isManual = false } = {}) {
     if (!isManual) nextScanAt = calcNextScanTime();
   } catch (err) {
     console.error('[SIGNAL]', err);
-    showScanError(err.message || 'Scan failed — will retry.');
+    const msg = err.message || 'Unknown error';
+    // Show full error so user can see what's happening
+    showScanError(msg.slice(0, 120));
+    // Also alert on mobile so it's visible
+    if (isManual) {
+      setTimeout(() => alert('Scan error: ' + msg.slice(0, 200)), 100);
+    }
   } finally {
     isScanning = false;
     releaseScanLock();
