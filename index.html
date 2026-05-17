@@ -442,27 +442,7 @@ window.activeFilter    = 'all';
 window.historyRange    = '7d';
 window.analyticsPeriod = 'allTime';
 
-// ─── TABS ────────────────────────────────────────────────────
-document.querySelectorAll('.tab[data-tab]').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    window.activeTab = t.dataset.tab;
-    document.getElementById('filterGroup').style.display = window.activeTab === 'feed' ? '' : 'none';
-    renderActiveTab();
-  });
-});
-
-// ─── FILTER CHIPS ────────────────────────────────────────────
-document.querySelectorAll('.chip[data-filter]').forEach(c => {
-  c.addEventListener('click', () => {
-    document.querySelectorAll('.chip[data-filter]').forEach(x => x.classList.remove('on'));
-    c.classList.add('on');
-    window.activeFilter = c.dataset.filter;
-    renderFeed();
-    renderSidebar();
-  });
-});
+// ─── TABS + CHIPS wired in DOMContentLoaded below ───────────
 
 // ─── SIDEBAR ────────────────────────────────────────────────
 window.renderSidebar = function() {
@@ -860,7 +840,7 @@ function renderSettings() {
         <div class="settings-card">
           <div class="settings-field-label">Theme</div>
           <button class="btn-connect-full" id="themeToggleBtn" onclick="toggleTheme()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
-            ${getTheme() === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
+            ${(typeof getTheme === 'function' ? getTheme() : 'dark') === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
           </button>
         </div>
       </div>
@@ -932,8 +912,33 @@ window.switchToSettings = function() {
 
 // ─── INIT UI ─────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // Wire tabs
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      window.activeTab = t.dataset.tab;
+      const fg = document.getElementById('filterGroup');
+      if (fg) fg.style.display = window.activeTab === 'feed' ? '' : 'none';
+      renderActiveTab();
+    });
+  });
+
+  // Wire filter chips
+  document.querySelectorAll('.chip[data-filter]').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.chip[data-filter]').forEach(x => x.classList.remove('on'));
+      c.classList.add('active');
+      c.classList.add('on');
+      window.activeFilter = c.dataset.filter;
+      renderFeed();
+      renderSidebar();
+    });
+  });
+
   renderFeed();
   renderSidebar();
+
   setInterval(() => {
     if (window.activeTab === 'h24')       render24h();
     if (window.activeTab === 'analytics') window.renderAnalytics();
