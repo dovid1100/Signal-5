@@ -447,7 +447,18 @@ canvas.chart-canvas{width:100%!important;height:100%!important}
     <div class="hdr-cd" style="margin-left:auto"><div class="hdr-cd-val" id="countdown-mobile">--:--</div></div>
   </div>
   <div class="hdr-right">
-    <button class="btn-scan" id="scanBtn" onclick="triggerManualScan()">▶ Scan Now</button>
+    <button class="btn-scan" id="scanBtn" onclick="
+  // Step by step diagnostic
+  const key = (function(){ try { return localStorage.getItem('signal_api_key') || ''; } catch(e){ return ''; } })();
+  if (!key) { alert('No API key found in storage. Go to Settings tab and paste your key, then tap Connect.'); return; }
+  const lock = (function(){ try { const r = localStorage.getItem('signal_scan_lock'); if(r){ const l=JSON.parse(r); if(Date.now()-l.ts < 90000){ return true; } } return false; } catch(e){ return false; } })();
+  if (lock) { localStorage.removeItem('signal_scan_lock'); alert('Cleared a stale scan lock. Try scanning again now.'); return; }
+  if (typeof triggerManualScan === 'function') {
+    triggerManualScan();
+  } else {
+    alert('triggerManualScan not found — app.js may not have loaded. Check GitHub that app.js is lowercase.');
+  }
+">▶ Scan Now</button>
   </div>
 </header>
 
