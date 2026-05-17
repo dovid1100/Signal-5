@@ -23,8 +23,24 @@ html,body{height:100%;overflow:hidden;background:#0E1016;color:#E8EDF5;font-fami
   --purple:#B06EFF;--purple-dim:rgba(176,110,255,.12);
   --muted:rgba(200,210,230,.38);--muted2:rgba(200,210,230,.55);
   --text:#E8EDF5;--text2:rgba(232,237,245,.68);
-  --sidebar-w:72px;--header-h:54px;--subbar-h:38px;--header-gap:10px;
+  --sidebar-w:72px;--header-h:54px;--subbar-h:38px;
 }
+[data-theme="light"]{
+  --bg:#F0F2F7;--surface:#FFFFFF;--surface2:#F5F7FC;--surface3:#E8ECF5;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.12);
+  --blue:#0D8FCC;--blue-dim:rgba(13,143,204,.10);--blue-glow:rgba(13,143,204,.20);
+  --red:#D6294A;--red-dim:rgba(214,41,74,.10);
+  --amber:#C47D00;--amber-dim:rgba(196,125,0,.10);
+  --green:#0B8A56;--green-dim:rgba(11,138,86,.10);
+  --purple:#7B3FC4;--purple-dim:rgba(123,63,196,.10);
+  --muted:rgba(30,40,60,.38);--muted2:rgba(30,40,60,.60);
+  --text:#111828;--text2:rgba(17,24,40,.72);
+}
+[data-theme="light"] body{background:var(--bg);color:var(--text)}
+[data-theme="light"] body::after{display:none}
+[data-theme="light"] .header{background:rgba(240,242,247,.97)}
+[data-theme="light"] .subbar{background:rgba(245,247,252,.97)}
+[data-theme="light"] .ticker-sidebar{background:var(--surface)}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px)}
 
@@ -61,6 +77,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .btn-primary{background:var(--blue);color:#080a10}
 .btn-primary:hover{background:#72daff;box-shadow:0 0 18px var(--blue-glow)}
 .btn-scan{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+.btn-settings{background:none;border:1px solid var(--border2);border-radius:5px;color:var(--muted2);
+  font-size:16px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0}
+.btn-settings:hover{border-color:var(--blue);color:var(--blue)}
 .btn-scan:hover{border-color:var(--green);color:var(--green)}
 .btn-scan:disabled{opacity:.5;cursor:default}
 .mobile-status{display:none;align-items:center;gap:8px;font-size:10px;color:var(--muted);flex:1;min-width:0}
@@ -248,12 +268,58 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
 .bar-pct{font-size:10px;font-weight:600;width:38px;text-align:right;flex-shrink:0}
 .bar-count{font-size:9px;color:var(--muted);width:22px;flex-shrink:0;text-align:right}
 .no-data{font-size:11px;color:var(--muted);text-align:center;padding:40px 0;line-height:1.9}
+.settings-wrap{max-width:480px}
+.settings-section{margin-bottom:32px}
+.settings-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.settings-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.settings-card{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:20px}
+.settings-field{margin-bottom:16px}
+.settings-field:last-child{margin-bottom:0}
+.settings-field-label{font-size:10px;color:var(--muted2);margin-bottom:8px}
+.settings-input{width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;
+  padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);
+  outline:none;transition:border-color .2s}
+.settings-input:focus{border-color:var(--blue)}
+.settings-input::placeholder{color:rgba(255,255,255,.18)}
+.btn-connect-full{width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;background:var(--blue);color:#080a10;
+  border:none;border-radius:6px;padding:11px;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-connect-full:hover{background:#72daff;box-shadow:0 0 18px var(--blue-glow)}
+.connect-status{font-size:10px;color:var(--muted);margin-top:10px;min-height:16px;text-align:center}
+.settings-hint{font-size:10px;color:var(--muted);line-height:1.7;margin-top:10px}
 
 /* ─ BACK BUTTON ─ */
 .back-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.07em;
   text-transform:uppercase;background:var(--surface3);color:var(--muted2);border:1px solid var(--border2);
   border-radius:5px;padding:7px 14px;cursor:pointer;margin-bottom:18px;display:inline-block;transition:all .2s}
 .back-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ─ EMPTY STATE WITH LIVE PRICES ─ */
+.es-wrap{padding:8px 0}
+.es-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.es-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text2)}
+.es-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.es-perf{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.es-perf-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 16px;flex:1;min-width:100px}
+.es-perf-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.es-perf-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+.es-table-header{display:flex;align-items:center;gap:10px;padding:0 14px 8px;
+  font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.es-row{display:flex;align-items:center;gap:10px;padding:11px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;
+  cursor:pointer;transition:background .15s,border-color .15s}
+.es-row:hover{background:var(--surface2);border-color:var(--border2)}
+.es-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;width:46px;flex-shrink:0}
+.es-catalyst{flex-shrink:0}
+.es-date{font-size:9px;color:var(--muted);flex-shrink:0;margin-left:auto}
+.es-move{font-size:12px;font-weight:600;width:54px;text-align:right;flex-shrink:0}
+.es-outcome{font-size:11px;width:16px;text-align:center;flex-shrink:0}
+.es-loading{font-size:11px;color:var(--muted);text-align:center;padding:32px 0}
+.es-cd{font-family:'Syne',sans-serif;font-weight:800;font-size:36px;color:var(--blue);
+  letter-spacing:.04em;margin:12px 0 4px}
+.es-cd-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
 
 /* ════════════════════════════════
    MOBILE ≤640px
@@ -262,9 +328,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   :root{--header-h:50px;--subbar-h:40px;--sidebar-w:0px}
   .header{padding:0 12px;gap:8px}
   .hdr-stats,.hdr-div{display:none}
-  .api-input{width:100px;font-size:9px}
   .btn-scan{display:flex;font-size:9px;padding:6px 9px}
-  .btn-primary{font-size:9px;padding:6px 9px}
+  .btn-settings{display:none}
   .mobile-status{display:flex}
   .hdr-cd{padding:4px 8px}
   .hdr-cd-label{display:none}
@@ -340,9 +405,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
     </div>
   </div>
   <div class="hdr-right">
-    <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-••••••••••" autocomplete="off"/>
-    <button class="btn btn-primary" id="connectBtn">Connect</button>
     <button class="btn btn-scan" id="scanBtn">▶ Scan Now</button>
+    <button class="btn-settings" id="settingsBtn" onclick="switchToSettings()" title="Settings">⚙</button>
   </div>
 </header>
 
@@ -352,6 +416,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
   <div class="tab" data-tab="h24">24 Hours <span class="tab-badge" id="h24Badge">0</span></div>
   <div class="tab" data-tab="history">History</div>
   <div class="tab" data-tab="analytics">Analytics</div>
+  <div class="tab" data-tab="settings">⚙ Settings</div>
   <div class="subbar-sep"></div>
   <div class="filter-group" id="filterGroup">
     <div class="chip on" data-filter="all">All</div>
@@ -536,15 +601,9 @@ window.renderFeed = function() {
   document.getElementById('feedBadge').textContent = sigs.length;
 
   if (sigs.length === 0) {
-    if (!window.activeSignalId) {
-      document.getElementById('detailArea').innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">📡</div>
-          <div class="empty-title">No signals yet today</div>
-          <div class="empty-body">Enter your Anthropic API key and tap Scan Now, or wait for the auto-scan (9AM–8PM ET, every 5 min).</div>
-        </div>`;
-    }
-    renderSidebar(); return;
+    renderSidebar();
+    showRichEmptyState();
+    return;
   }
   renderSidebar();
   if (!window.activeSignalId || !sigs.find(s => s.id === window.activeSignalId))
@@ -552,12 +611,62 @@ window.renderFeed = function() {
   window.renderDetail(window.activeSignalId);
 };
 
+async function showRichEmptyState() {
+  const detail = document.getElementById('detailArea');
+  if (!detail) return;
+
+  // Show countdown immediately
+  const msLeft  = msUntilNextMarketOpen();
+  const tot     = Math.floor(msLeft / 1000);
+  const hh      = Math.floor(tot / 3600);
+  const mm      = Math.floor((tot % 3600) / 60);
+  const cdStr   = hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+  const isOpen  = isMarketOpen();
+
+  detail.innerHTML = `<div class="es-wrap">
+    <div class="es-header">
+      <div class="es-title">No signals yet today</div>
+      <div class="es-sub">${isOpen ? 'Market open · scanning every 5 min' : 'Market closed · opens in ' + cdStr}</div>
+    </div>
+    <div id="esPerfRow"></div>
+    <div id="esPriceRows"><div class="es-loading">⟳ Loading recent signals...</div></div>
+  </div>`;
+
+  // Async: fetch live prices + build content
+  try {
+    const { priceRows, acc, count } = await buildEmptyStateContent();
+    const perfEl = document.getElementById('esPerfRow');
+    const rowsEl = document.getElementById('esPriceRows');
+    if (!perfEl || !rowsEl) return;
+
+    if (acc && count >= 3) {
+      perfEl.innerHTML = `<div class="es-perf">
+        <div class="es-perf-card"><div class="es-perf-label">Hit Rate (7d)</div><div class="es-perf-val val-green">${acc.overall}%</div></div>
+        <div class="es-perf-card"><div class="es-perf-label">Signals</div><div class="es-perf-val val-blue">${acc.total}</div></div>
+        <div class="es-perf-card"><div class="es-perf-label">Avg Hit</div><div class="es-perf-val val-green">${acc.avgHitMove !== null ? '+' + acc.avgHitMove + '%' : '—'}</div></div>
+      </div>`;
+    }
+
+    if (count > 0) {
+      rowsEl.innerHTML = \`<div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Recent signals — live prices</div>\${priceRows}\`;
+    } else {
+      rowsEl.innerHTML = \`<div class="empty-state" style="height:40vh"><div class="empty-icon">📡</div><div class="empty-title">No recent signals</div><div class="empty-body">The scanner will run automatically during market hours (9AM–8PM ET, every 5 min).</div></div>\`;
+    }
+  } catch(e) {
+    console.warn('[SIGNAL] Empty state fetch error:', e);
+  }
+}
+
 // ─── 24H TAB ─────────────────────────────────────────────────
 function render24h() {
-  const sigs = getSignalsLast24h();
+  const et  = getNowET();
+  const day = et.getDay();
+  const isWeekend = (day === 0 || day === 6);
+  const sigs = getSignalsFor24hTab();
+  const label = isWeekend ? "Friday's Activity" : "Last 24 Hours";
   document.getElementById('h24Badge').textContent = sigs.length;
   if (sigs.length === 0) {
-    document.getElementById('detailArea').innerHTML = `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No signals in last 24h</div><div class="empty-body">Signals from the past 24 hours will appear here grouped by hour.</div></div>`;
+    document.getElementById('detailArea').innerHTML = `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">No signals in ${label.toLowerCase()}</div><div class="empty-body">${isWeekend ? "Friday's signals will appear here on weekends." : "Signals from the past 24 hours will appear here grouped by hour."}</div></div>`;
     return;
   }
   const groups = {};
@@ -716,10 +825,109 @@ window.setAnalyticsPeriod = function(p) { window.analyticsPeriod = p; window.ren
 window.renderActiveTab = function() {
   window.activeSignalId = null;
   const t = window.activeTab;
-  if (t === 'feed')      { renderFeed(); renderSidebar(); }
-  else if (t === 'h24')  render24h();
+  if (t === 'feed')         { renderFeed(); renderSidebar(); }
+  else if (t === 'h24')     render24h();
   else if (t === 'history') renderHistory();
   else if (t === 'analytics') window.renderAnalytics();
+  else if (t === 'settings')  renderSettings();
+};
+
+function renderSettings() {
+  const saved = (() => { try { return localStorage.getItem('signal_api_key') || ''; } catch { return ''; } })();
+  const isConnected = !!saved;
+  document.getElementById('detailArea').innerHTML = `
+    <div class="settings-wrap">
+      <div class="settings-section">
+        <div class="settings-label">API Key</div>
+        <div class="settings-card">
+          <div class="settings-field">
+            <div class="settings-field-label">Anthropic API Key</div>
+            <input class="settings-input" id="apiKeyInput" type="password"
+              placeholder="sk-ant-api03-••••••••••" autocomplete="off" value="${saved ? '••••••••••••••••••••' : ''}"/>
+          </div>
+          <button class="btn-connect-full" id="connectBtn" onclick="connectFromSettings()">
+            ${isConnected ? '✓ Connected — tap to update' : 'Connect'}
+          </button>
+          <div class="connect-status" id="connectStatus">${isConnected ? 'API key saved.' : ''}</div>
+          <div class="settings-hint">
+            Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a> → API Keys.<br>
+            Your key is stored only in this browser and sent directly to Anthropic. It is never stored on any server.
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Appearance</div>
+        <div class="settings-card">
+          <div class="settings-field-label">Theme</div>
+          <button class="btn-connect-full" id="themeToggleBtn" onclick="toggleTheme()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
+            ${getTheme() === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
+          </button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Notifications</div>
+        <div class="settings-card">
+          <div class="settings-field-label">Background alerts</div>
+          <button class="btn-connect-full" id="notifBtn" onclick="requestNotifFromSettings()" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border2)">
+            ${(typeof Notification !== 'undefined' && Notification.permission === 'granted') ? '✓ Notifications enabled' : '🔔 Enable notifications'}
+          </button>
+          <div class="settings-hint">When a new signal fires and you are not looking at the app, you will get a notification. Works on desktop and Android Chrome. On iPhone, add the app to your home screen first.</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Scanner</div>
+        <div class="settings-card">
+          <div style="font-size:11px;color:var(--text2);line-height:1.8">
+            Auto-scans every <strong style="color:var(--blue)">5 minutes</strong> during market hours<br>
+            <strong style="color:var(--blue)">9AM to 8PM ET</strong>, Monday to Friday<br><br>
+            Targets small/mid cap stocks <strong style="color:var(--blue)">$50M to $2B</strong> market cap<br>
+            with <strong style="color:var(--blue)">20%+</strong> single-day move potential<br><br>
+            Outcome checked <strong style="color:var(--blue)">60 minutes</strong> after each signal<br>
+            HIT = <strong style="color:var(--green)">5%+</strong> move in predicted direction
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Wire up input to show real placeholder on focus
+  const inp = document.getElementById('apiKeyInput');
+  if (inp) {
+    inp.addEventListener('focus', () => { if (inp.value.startsWith('•')) inp.value = ''; });
+  }
+}
+
+window.requestNotifFromSettings = async function() {
+  const granted = await requestNotificationPermission();
+  const btn = document.getElementById('notifBtn');
+  if (btn) {
+    btn.textContent = granted ? '✓ Notifications enabled' : '✗ Permission denied — check browser settings';
+    btn.style.color = granted ? 'var(--green)' : 'var(--red)';
+  }
+};
+
+window.connectFromSettings = function() {
+  const inp = document.getElementById('apiKeyInput');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val || val.startsWith('•')) {
+    document.getElementById('connectStatus').textContent = 'Paste your API key first.';
+    document.getElementById('connectStatus').style.color = 'var(--red)';
+    return;
+  }
+  try { localStorage.setItem('signal_api_key', val); } catch(_) {}
+  const btn = document.getElementById('connectBtn');
+  if (btn) { btn.textContent = '✓ Connected'; btn.style.background = 'var(--green)'; }
+  const st = document.getElementById('connectStatus');
+  if (st) { st.textContent = 'API key saved to this browser.'; st.style.color = 'var(--green)'; }
+};
+
+window.switchToSettings = function() {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  const t = document.querySelector('[data-tab="settings"]');
+  if (t) t.classList.add('active');
+  window.activeTab = 'settings';
+  document.getElementById('filterGroup').style.display = 'none';
+  renderSettings();
 };
 
 // ─── INIT UI ─────────────────────────────────────────────────
