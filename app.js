@@ -316,7 +316,14 @@ function initPullToRefresh() {
     const dy = e.changedTouches[0].clientY - startY;
     const ind = document.getElementById('pullIndicator');
     if (ind) ind.style.opacity = '0';
-    if (dy > 60) { haptic('light'); triggerManualScan(); }
+    if (dy > 60) {
+      haptic('light');
+      if (window.activeTab === 'watchlist') {
+        if (typeof window.renderWatchlist === 'function') window.renderWatchlist();
+      } else {
+        triggerManualScan();
+      }
+    }
   });
 }
 
@@ -426,6 +433,71 @@ function addToWatchlist(ticker) {
 }
 function removeFromWatchlist(ticker) { saveWatchlist(loadWatchlist().filter(x => x.ticker !== ticker.toUpperCase())); }
 function isOnWatchlist(ticker) { return !!loadWatchlist().find(x => x.ticker === ticker.toUpperCase()); }
+
+// Fetch previous close price for accurate % change
+async function fetchPreviousClose(ticker) {
+  const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(yUrl)}`;
+  try {
+    const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+    if (!Array.isArray(closes) || closes.length < 2) return null;
+    // Second to last close = yesterday
+    for (let i = closes.length - 2; i >= 0; i--) {
+      if (closes[i] != null) return parseFloat(closes[i].toFixed(4));
+    }
+    return null;
+  } catch { return null; }
+}
+
+// Fetch short interest and earnings date from Yahoo Finance
+async function fetchStockMeta(ticker) {
+  const yUrl = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=defaultKeyStatistics,calendarEvents`;
+  const proxy = `https://corsproxy.io/?${encodeURIComponent(yUrl)}`;
+  try {
+    const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return {};
+    const data = await res.json();
+    const stats = data?.quoteSummary?.result?.[0];
+    const shortPct = stats?.defaultKeyStatistics?.shortPercentOfFloat?.fmt || null;
+    const earningsArr = stats?.calendarEvents?.earnings?.earningsDate;
+    let earningsDate = null;
+    if (Array.isArray(earningsArr) && earningsArr.length > 0) {
+      earningsDate = new Date(earningsArr[0].raw * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    return { shortPct, earningsDate };
+  } catch { return {}; }
+}
+
+// Fetch price alerts storage
+function loadPriceAlerts() { try { return JSON.parse(localStorage.getItem('signal_price_alerts') || '{}'); } catch { return {}; } }
+function savePriceAlerts(a) { try { localStorage.setItem('signal_price_alerts', JSON.stringify(a)); } catch (_) {} }
+
+function setPriceAlert(ticker, targetPrice, direction) {
+  const alerts = loadPriceAlerts();
+  alerts[ticker] = { targetPrice: parseFloat(targetPrice), direction, createdAt: new Date().toISOString() };
+  savePriceAlerts(alerts);
+}
+
+function removePriceAlert(ticker) {
+  const alerts = loadPriceAlerts(); delete alerts[ticker]; savePriceAlerts(alerts);
+}
+
+function checkPriceAlerts(ticker, currentPrice) {
+  const alerts = loadPriceAlerts();
+  const alert = alerts[ticker];
+  if (!alert || !currentPrice) return;
+  const triggered = alert.direction === 'above'
+    ? currentPrice >= alert.targetPrice
+    : currentPrice <= alert.targetPrice;
+  if (triggered) {
+    fireNotification([{ ticker, urgency: 'high', move: 0, catalyst: 'Price Alert', headline: `${ticker} hit your target of $${alert.targetPrice}`, id: `alert_${ticker}_${Date.now()}` }]);
+    haptic('signal');
+    removePriceAlert(ticker); // one-time alert
+  }
+}
 
 async function fetchWatchlistNews(ticker, apiKey) {
   if (!apiKey) return [];
@@ -797,7 +869,25 @@ function calcAccuracy(signals) {
   const withPred = checked.filter(s => s.move && s.basePrice && s.checkPrice);
   let trend = null;
   if (checked.length >= 6) { const half = Math.floor(checked.length / 2); const r1 = checked.slice(half).filter(s => s.outcome === 'hit').length / (checked.length - half) * 100; const r2 = checked.slice(0, half).filter(s => s.outcome === 'hit').length / half * 100; trend = parseFloat((r2 - r1).toFixed(1)); }
-  return { overall, total: checked.length, hits, misses: checked.length - hits, pending: signals.filter(s => s.outcome === 'pending').length, byUrgency, byCatalyst, byDay, byHour, avgHitMove: avg(checked.filter(s => s.outcome === 'hit' && movePct(s) != null).map(movePct)), avgMissMove: avg(checked.filter(s => s.outcome === 'miss' && movePct(s) != null).map(movePct)), avgPredicted: avg(withPred.map(s => Math.abs(s.move))), avgActual: avg(withPred.map(s => Math.abs(((s.checkPrice - s.basePrice) / s.basePrice) * 100))), best, worst, trend };
+  // Confidence trend
+  const confTrend = checked.length >= 4 ? (() => {
+    const half = Math.floor(checked.length / 2);
+    const c1 = avg(checked.slice(half).map(s => s.confidence));
+    const c2 = avg(checked.slice(0, half).map(s => s.confidence));
+    return c1 && c2 ? parseFloat((c2 - c1).toFixed(1)) : null;
+  })() : null;
+
+  // Best scanning hour (most signals fired)
+  const sigsByHour = {};
+  for (const s of signals) {
+    const h = new Date(new Date(s.scannedAt).toLocaleString('en-US', { timeZone: 'America/New_York' })).getHours();
+    sigsByHour[h] = (sigsByHour[h] || 0) + 1;
+  }
+  const bestScanHour = Object.keys(sigsByHour).length
+    ? parseInt(Object.entries(sigsByHour).sort((a, b) => b[1] - a[1])[0][0])
+    : null;
+
+  return { overall, total: checked.length, hits, misses: checked.length - hits, pending: signals.filter(s => s.outcome === 'pending').length, byUrgency, byCatalyst, byDay, byHour, avgHitMove: avg(checked.filter(s => s.outcome === 'hit' && movePct(s) != null).map(movePct)), avgMissMove: avg(checked.filter(s => s.outcome === 'miss' && movePct(s) != null).map(movePct)), avgPredicted: avg(withPred.map(s => Math.abs(s.move))), avgActual: avg(withPred.map(s => Math.abs(((s.checkPrice - s.basePrice) / s.basePrice) * 100))), best, worst, trend, confTrend, bestScanHour };
 }
 
 function getAnalytics() { return { allTime: calcAccuracy(loadSignals()), today: calcAccuracy(getSignalsToday()), h24: calcAccuracy(getSignalsLast24h()), d7: calcAccuracy(getSignalsLast7d()), d30: calcAccuracy(getSignalsLast30d()) }; }
