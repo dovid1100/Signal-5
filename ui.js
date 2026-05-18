@@ -146,10 +146,11 @@ window.renderSidebar = function() {
     return;
   }
   sidebar.innerHTML = sigs.map(s => `
-    <div class="ticker-item urg-${s.urgency} ${s.id === window.activeSignalId ? 'active' : ''}" data-id="${s.id}" onclick="selectSignal('${s.id}')">
+    <div class="ticker-item urg-${s.urgency} ${s.id === window.activeSignalId ? 'active' : ''} ${s.signalType === 'momentum' ? 'is-momentum' : ''}" data-id="${s.id}" onclick="selectSignal('${s.id}')">
       ${pins.includes(s.id) ? '<div class="t-pin">📌</div>' : ''}
       <div class="t-name">${s.ticker}</div>
       <div class="t-move ${s.move >= 0 ? 'move-up' : 'move-dn'}">${s.move >= 0 ? '+' : ''}${s.move}%</div>
+      ${s.signalType === 'momentum' ? '<div style="font-size:7px;color:rgba(176,110,255,.8);letter-spacing:.05em;text-transform:uppercase">MOM</div>' : ''}
     </div>`).join('');
 
   document.getElementById('feedBadge').textContent = sigs.length;
@@ -174,11 +175,12 @@ window.renderDetail = function(id) {
   window.activeSignalId = id;
   window.renderSidebar();
 
-  const confClass  = sig.urgency === 'critical' ? 'fill-red' : sig.urgency === 'high' ? 'fill-amber' : 'fill-green';
-  const moveClass  = sig.move >= 0 ? 'val-green' : 'val-red';
-  const badgeIcon  = sig.urgency === 'critical' ? '⚡' : sig.urgency === 'high' ? '▲' : '●';
-  const pinned     = isPinned(id), note = getNote(id);
+  const confClass   = sig.urgency === 'critical' ? 'fill-red' : sig.urgency === 'high' ? 'fill-amber' : 'fill-green';
+  const moveClass   = sig.move >= 0 ? 'val-green' : 'val-red';
+  const badgeIcon   = sig.urgency === 'critical' ? '⚡' : sig.urgency === 'high' ? '▲' : '●';
+  const pinned      = isPinned(id), note = getNote(id);
   const inPortfolio = isInPortfolio(sig.ticker), pos = inPortfolio ? getPosition(sig.ticker) : null;
+  const isMomentum  = sig.signalType === 'momentum';
 
   const sourcesHtml = sig.sources.map(src => `
     <a class="source-card" href="${src.url}" target="_blank" rel="noopener noreferrer">
@@ -205,7 +207,18 @@ window.renderDetail = function(id) {
     outcomeHtml = `<div class="outcome-card"><div class="outcome-msg"><span class="badge-pend">PENDING</span>&nbsp; Check in ${remain} min.</div></div>`;
   }
 
+  // Momentum-specific continuation/fade section
+  const momentumSection = isMomentum && (sig.continuationReason || sig.fadeRisks) ? `
+    <div class="section" style="animation-delay:.06s">
+      <div class="section-title">Continuation Analysis</div>
+      <div class="momentum-analysis">
+        ${sig.continuationReason ? `<div class="ma-row ma-bull"><div class="ma-icon">🟢</div><div class="ma-body"><div class="ma-label">Why it continues</div><div class="ma-text">${sig.continuationReason}</div></div></div>` : ''}
+        ${sig.fadeRisks ? `<div class="ma-row ma-bear"><div class="ma-icon">🔴</div><div class="ma-body"><div class="ma-label">Fade risks</div><div class="ma-text">${sig.fadeRisks}</div></div></div>` : ''}
+      </div>
+    </div>` : '';
+
   document.getElementById('detailArea').innerHTML = `<div class="slide-up">
+    ${isMomentum ? `<div class="momentum-banner"><span class="momentum-icon">📈</span><div class="momentum-banner-body"><div class="momentum-banner-title">Momentum Continuation Signal</div><div class="momentum-banner-sub">Already moving — Claude judged the move has further to go.</div></div></div>` : ''}
     ${inPortfolio && pos ? `<div class="portfolio-badge">💼 You own ${pos.shares} shares · avg $${pos.buyPrice}</div>` : ''}
     <div class="signal-hero">
       <div class="hero-badge badge-${sig.urgency}"><div class="badge-icon">${badgeIcon}</div>${sig.urgency.toUpperCase()}</div>
@@ -214,13 +227,14 @@ window.renderDetail = function(id) {
         <div class="hero-headline">${sig.headline}</div>
         <div class="hero-tags">
           <span class="tag ${sig.catalystTag}">${sig.catalyst}</span>
+          ${isMomentum ? '<span class="tag tag-momentum">Momentum</span>' : ''}
           <span class="tag tag-macro">${sig.time}</span>
           <span class="tag tag-macro">Vol ${sig.volume}</span>
           <span class="tag tag-macro">${sig.marketCap}</span>
         </div>
       </div>
       <div class="hero-metrics">
-        <div class="metric-card"><div class="metric-label">Move</div><div class="metric-val ${moveClass}">${sig.move >= 0 ? '+' : ''}${sig.move}%</div><div class="metric-sub">Current</div></div>
+        <div class="metric-card"><div class="metric-label">${isMomentum ? 'Move Today' : 'Move'}</div><div class="metric-val ${moveClass}">${sig.move >= 0 ? '+' : ''}${sig.move}%</div><div class="metric-sub">${isMomentum ? 'So far' : 'Current'}</div></div>
         <div class="metric-card"><div class="metric-label">Upside</div><div class="metric-val val-blue">${sig.upside}</div><div class="metric-sub">AI est.</div></div>
         <div class="metric-card" style="grid-column:span 2"><div class="metric-label">Confidence — ${sig.confidence}%</div><div class="conf-track"><div class="conf-fill ${confClass}" style="width:${sig.confidence}%"></div></div></div>
       </div>
@@ -234,11 +248,12 @@ window.renderDetail = function(id) {
     <div id="noteSection-${sig.id}" style="display:${note ? '' : 'none'}">
       <div class="note-box"><textarea class="note-input" id="noteInput-${sig.id}" placeholder="Add your thoughts...">${note}</textarea><button class="note-save-btn" onclick="saveNoteFromUI('${sig.id}')">Save note</button></div>
     </div>
+    ${momentumSection}
     <div class="section" style="animation-delay:.04s">
       <div class="section-title">Price Chart</div>
       <div class="chart-wrap">
         <div class="chart-header">
-          <div class="chart-title">${sig.ticker} — since signal</div>
+          <div class="chart-title">${sig.ticker} — ${isMomentum ? 'today' : 'since signal'}</div>
           <div class="chart-toggle">
             <div class="chart-btn ${window.activeChartMode === 'line' ? 'on' : ''}" onclick="switchChart('${sig.id}','line',this)">Line</div>
             <div class="chart-btn ${window.activeChartMode === 'candle' ? 'on' : ''}" onclick="switchChart('${sig.id}','candle',this)">Candle</div>
@@ -1082,6 +1097,21 @@ function renderSettings() {
         </div>
         <div class="settings-field"><div class="settings-field-label">Catalysts to scan</div>
           <div class="cat-group">${[['fda','FDA'],['earn','Earnings'],['ma','M&A'],['short','Short Squeeze'],['k8','8-K'],['macro','Other']].map(([k,label]) => `<div class="cat-toggle ${s.catalysts[k] ? 'on' : ''}" onclick="toggleCatalyst('${k}')">${label}</div>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section"><div class="settings-label">Momentum Scanner</div>
+      <div class="settings-card">
+        <div class="settings-field"><div class="settings-field-label">Scan live movers for continuation</div>
+          <div class="preset-group">
+            <div class="preset-btn ${s.momentumEnabled!==false?'on':''}" onclick="updateSetting('momentumEnabled',true);renderSettings()">On</div>
+            <div class="preset-btn ${s.momentumEnabled===false?'on':''}" onclick="updateSetting('momentumEnabled',false);renderSettings()">Off</div>
+          </div>
+          <div class="settings-hint" style="margin-top:7px">When ON, each scan also checks Yahoo Finance top gainers already moving today. Claude then judges whether the move will continue and why — or if it's likely to fade.</div>
+        </div>
+        <div class="settings-field"><div class="settings-field-label">Min move to consider: <strong style="color:var(--blue)" id="momMoveVal">${s.momentumMinMove||5}%</strong></div>
+          <input class="settings-slider" type="range" min="3" max="20" step="1" value="${s.momentumMinMove||5}" oninput="document.getElementById('momMoveVal').textContent=this.value+'%'" onchange="updateSetting('momentumMinMove',parseInt(this.value))"/>
         </div>
       </div>
     </div>
