@@ -1,14 +1,14 @@
 {
-  "name": "SIGNAL",
-  "short_name": "SIGNAL",
-  "description": "AI-powered stock market signal scanner",
+  "name": "VERTEX — Pre-Event Intelligence",
+  "short_name": "VERTEX",
+  "description": "Pre-event intelligence scanner for FDA, short squeezes, M&A, and momentum",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0E1016",
-  "theme_color": "#0E1016",
-  "orientation": "portrait-primary",
+  "background_color": "#0A0C12",
+  "theme_color": "#0A0C12",
+  "orientation": "portrait",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
