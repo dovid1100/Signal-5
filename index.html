@@ -320,6 +320,18 @@ canvas.chart-canvas{width:100%!important;height:100%!important}
 .watch-news-item:hover{background:var(--surface)}
 .watch-news-source{font-size:9px;color:var(--muted);margin-bottom:2px}
 .watch-loading{font-size:10px;color:var(--muted);padding:10px 0}
+.watch-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.watch-meta-tag{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--surface3);border:1px solid var(--border);border-radius:3px;padding:2px 7px;color:var(--muted2)}
+.watch-meta-tag.earn{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+.watch-meta-tag.alert{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.watch-news-actions{display:flex;gap:7px;margin-bottom:6px}
+.watch-news-load-btn,.watch-alert-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--surface3);color:var(--muted2);border:1px solid var(--border);border-radius:4px;padding:5px 10px;cursor:pointer;transition:all .2s}
+.watch-news-load-btn:hover{border-color:var(--blue);color:var(--blue)}
+.watch-alert-btn:hover{border-color:var(--amber);color:var(--amber)}
+.watch-alert-form{padding:4px 0}
+.watch-select{background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:7px 8px;font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--text);outline:none}
+.watch-price-input{flex:1;background:var(--surface3);border:1px solid var(--border2);border-radius:5px;padding:7px 9px;font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--text);outline:none;min-width:80px}
+.watch-save-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--blue);color:#080a10;border:none;border-radius:5px;padding:7px 12px;cursor:pointer}
 
 /* ── Portfolio ── */
 .portfolio-wrap{max-width:700px}
@@ -395,6 +407,7 @@ canvas.chart-canvas{width:100%!important;height:100%!important}
   .filter-group,.subbar-sep{display:none}
   .ticker-sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;width:100%;height:62px;border-right:none;border-top:1px solid var(--border2);display:flex;flex-direction:row;overflow-x:auto;overflow-y:hidden;background:rgba(14,16,22,.97);backdrop-filter:blur(20px);padding:0 4px}
   .ticker-item{flex-direction:row;height:62px;width:auto;min-width:62px;padding:0 9px;border-bottom:none;border-right:1px solid var(--border);gap:5px;flex-shrink:0}
+  input,select,textarea{font-size:16px!important}
   .ticker-item::before{left:0;right:0;top:0;bottom:auto;width:auto;height:3px}
   .ticker-item.active::after{display:none}
   .detail-area{margin-left:0;padding:12px 13px 74px;height:calc(100vh - var(--header-h) - var(--subbar-h))}
@@ -566,7 +579,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('detailArea').addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
   document.getElementById('detailArea').addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - swipeStartX;
-    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dx) < 120) return;
     const cur = tabs.indexOf(window.activeTab);
     const next = dx < 0 ? Math.min(cur + 1, tabs.length - 1) : Math.max(cur - 1, 0);
     if (next !== cur) {
@@ -934,26 +947,46 @@ async function renderWatchlist() {
   wl.forEach((item, i) => { if (!item.addedPrice && prices[i].status === 'fulfilled' && prices[i].value) { item.addedPrice = prices[i].value; } });
   saveWatchlist(wl);
   const container = document.getElementById('watchlistItems'); if (!container) return;
+  // Fetch previous closes + meta in parallel
+  const prevCloses = await Promise.allSettled(wl.map(x => fetchPreviousClose(x.ticker)));
+  const metas      = await Promise.allSettled(wl.map(x => fetchStockMeta(x.ticker)));
+  const priceAlerts = loadPriceAlerts();
+
   container.innerHTML = wl.map((item, i) => {
-    const cur = prices[i].status === 'fulfilled' ? prices[i].value : null;
-    const pct = cur && item.addedPrice ? ((cur - item.addedPrice) / item.addedPrice * 100).toFixed(2) : null;
+    const cur  = prices[i].status === 'fulfilled' ? prices[i].value : null;
+    const prev = prevCloses[i].status === 'fulfilled' ? prevCloses[i].value : null;
+    const meta = metas[i].status === 'fulfilled' ? metas[i].value : {};
+    const pct  = cur && prev ? ((cur - prev) / prev * 100).toFixed(2) : null;
     const color = pct === null ? 'var(--muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
+    const alert = priceAlerts[item.ticker];
+    if (cur) checkPriceAlerts(item.ticker, cur);
     return `<div class="watch-card" id="wcard-${item.ticker}">
-      <div class="watch-card-header">
+      <div class="watch-card-header" onclick="openWatchChart('${item.ticker}')" style="cursor:pointer">
         <div class="watch-ticker">${item.ticker}</div>
         ${cur ? `<div class="watch-price">$${cur.toFixed(2)}</div>` : ''}
-        <div class="watch-change" style="color:${color}">${pct !== null ? (pct >= 0 ? '+' : '') + pct + '%' : '—'}</div>
-        <button class="watch-remove" onclick="removeWatchlistItem('${item.ticker}')">Remove</button>
+        <div class="watch-change" style="color:${color}">${pct !== null ? (pct >= 0 ? '+' : '') + pct + '% today' : '—'}</div>
+        <button class="watch-remove" onclick="event.stopPropagation();removeWatchlistItem('${item.ticker}')">Remove</button>
       </div>
-      <div class="watch-news" id="wnews-${item.ticker}"><div class="watch-loading">⟳ Loading news...</div></div>
+      <div class="watch-meta">
+        ${meta.shortPct ? `<span class="watch-meta-tag">Short: ${meta.shortPct}</span>` : ''}
+        ${meta.earningsDate ? `<span class="watch-meta-tag earn">Earnings: ${meta.earningsDate}</span>` : ''}
+        ${alert ? `<span class="watch-meta-tag alert">Alert: ${alert.direction === 'above' ? '↑' : '↓'}$${alert.targetPrice} <button onclick="removePriceAlert('${item.ticker}');renderWatchlist()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px">✕</button></span>` : ''}
+      </div>
+      <div id="wchart-${item.ticker}" style="display:none"></div>
+      <div class="watch-news-actions">
+        <button class="watch-news-load-btn" onclick="loadWatchNews('${item.ticker}')">📰 Load News</button>
+        <button class="watch-alert-btn" onclick="showPriceAlertForm('${item.ticker}', ${cur || 0})">🔔 Set Alert</button>
+      </div>
+      <div class="watch-news" id="wnews-${item.ticker}"></div>
+      <div id="walert-form-${item.ticker}" style="display:none" class="watch-alert-form">
+        <div style="display:flex;gap:7px;align-items:center;margin-top:8px">
+          <select id="walert-dir-${item.ticker}" class="watch-select"><option value="above">Above</option><option value="below">Below</option></select>
+          <input id="walert-price-${item.ticker}" type="number" class="watch-price-input" placeholder="Target $" step="0.01" value="${cur ? cur.toFixed(2) : ''}"/>
+          <button onclick="saveAlertFromForm('${item.ticker}')" class="watch-save-btn">Save</button>
+        </div>
+      </div>
     </div>`;
   }).join('');
-  wl.forEach(async item => {
-    const news = await fetchWatchlistNews(item.ticker, apiKey);
-    const el = document.getElementById(`wnews-${item.ticker}`); if (!el) return;
-    el.innerHTML = !news || !news.length ? '<div style="font-size:10px;color:var(--muted);padding:3px 0">No news today.</div>'
-      : news.map(n => `<a class="watch-news-item" href="${n.url || '#'}" target="_blank" rel="noopener noreferrer"><div class="watch-news-source">${n.source || ''} · ${n.time || ''}</div>${n.headline}</a>`).join('');
-  });
 }
 
 window.addWatchlistItem = () => {
@@ -964,6 +997,47 @@ window.addWatchlistItem = () => {
   else { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 1500); }
 };
 window.removeWatchlistItem = ticker => { removeFromWatchlist(ticker); haptic('light'); renderWatchlist(); };
+
+window.loadWatchNews = async function(ticker) {
+  const btn = document.querySelector(`[onclick="loadWatchNews('${ticker}')"]`);
+  if (btn) { btn.textContent = '⟳ Loading...'; btn.disabled = true; }
+  const apiKey = getApiKey();
+  const news = await fetchWatchlistNews(ticker, apiKey);
+  const el = document.getElementById(`wnews-${ticker}`); if (!el) return;
+  if (btn) btn.style.display = 'none';
+  el.innerHTML = !news || !news.length
+    ? '<div style="font-size:10px;color:var(--muted);padding:4px 0">No news found.</div>'
+    : news.map(n => `<a class="watch-news-item" href="${n.url||'#'}" target="_blank" rel="noopener noreferrer"><div class="watch-news-source">${n.source||''} · ${n.time||''}</div>${n.headline}</a>`).join('');
+};
+
+window.openWatchChart = async function(ticker) {
+  const wrap = document.getElementById(`wchart-${ticker}`); if (!wrap) return;
+  if (wrap.style.display !== 'none') { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  wrap.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:12px 0;text-align:center">⟳ Loading chart...</div>';
+  const data = await fetchOHLCV(ticker, '1mo', '1d');
+  if (!data || !data.length) { wrap.innerHTML = '<div style="font-size:10px;color:var(--muted);padding:8px 0">Chart unavailable</div>'; return; }
+  wrap.innerHTML = '<canvas id="wc-' + ticker + '" style="width:100%;height:120px"></canvas>';
+  setTimeout(() => {
+    const canvas = document.getElementById('wc-' + ticker); if (!canvas) return;
+    canvas.width = canvas.offsetWidth || 300; canvas.height = 120;
+    drawLineChart(canvas.getContext('2d'), data, canvas.width, 120);
+  }, 30);
+};
+
+window.showPriceAlertForm = function(ticker, curPrice) {
+  const form = document.getElementById(`walert-form-${ticker}`);
+  if (form) form.style.display = form.style.display === 'none' ? '' : 'none';
+};
+
+window.saveAlertFromForm = function(ticker) {
+  const dir   = document.getElementById(`walert-dir-${ticker}`)?.value;
+  const price = document.getElementById(`walert-price-${ticker}`)?.value;
+  if (!price || isNaN(price)) return;
+  setPriceAlert(ticker, price, dir);
+  haptic('light');
+  renderWatchlist();
+};
 
 // ════════════════════════════════════════════════════════════
 //  PORTFOLIO
@@ -1091,6 +1165,34 @@ window.renderAnalytics = function() {
       </div>`;
     }
     if (data.trend !== null) { const td = data.trend >= 0; html += `<div style="margin-bottom:16px"><div class="analytics-title">Accuracy Trend</div><div class="trend-badge" style="background:${td ? 'var(--green-dim)' : 'var(--red-dim)'};color:${td ? 'var(--green)' : 'var(--red)'}">${td ? '↑' : '↓'} ${data.trend >= 0 ? '+' : ''}${data.trend}% — accuracy ${td ? 'improving' : 'declining'}</div></div>`; }
+
+
+    // Signal velocity
+    const thisWeek = loadSignals().filter(s => new Date(s.scannedAt).getTime() > Date.now()-7*86400000).length;
+    const lastWeek = loadSignals().filter(s => { const t=new Date(s.scannedAt).getTime(); return t>Date.now()-14*86400000&&t<=Date.now()-7*86400000; }).length;
+    const velDir = thisWeek >= lastWeek;
+    html += '<div style="margin-bottom:20px"><div class="analytics-title">Signal Velocity</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<div class="stat-card"><div class="stat-card-label">This Week</div><div class="stat-card-val val-blue">' + thisWeek + '</div><div class="stat-card-sub">signals</div></div>' +
+      '<div class="stat-card"><div class="stat-card-label">Last Week</div><div class="stat-card-val" style="color:var(--muted2)">' + lastWeek + '</div><div class="stat-card-sub">' + (velDir ? '↑ up' : '↓ down') + ' from last week</div></div>' +
+      '</div></div>';
+
+    // Confidence trend
+    if (data.confTrend !== null) {
+      const ct = data.confTrend >= 0;
+      html += '<div style="margin-bottom:16px"><div class="analytics-title">Confidence Trend</div>' +
+        '<div class="trend-badge" style="background:' + (ct ? 'var(--blue-dim)' : 'var(--amber-dim)') + ';color:' + (ct ? 'var(--blue)' : 'var(--amber)') + '">' +
+        (ct ? '↑' : '↓') + ' ' + (data.confTrend >= 0 ? '+' : '') + data.confTrend + '% avg confidence</div></div>';
+    }
+
+    // Best scan hour
+    if (data.bestScanHour !== null) {
+      const bh = data.bestScanHour;
+      const lbl = (bh % 12 || 12) + (bh < 12 ? 'AM' : 'PM');
+      html += '<div style="margin-bottom:20px"><div class="analytics-title">Best Time to Scan</div>' +
+        '<div class="highlight-card"><div class="highlight-label">Most signals fire at</div>' +
+        '<div class="highlight-ticker">' + lbl + ' ET</div>' +
+        '<div class="highlight-detail">Run manual scans around this time for best results.</div></div></div>';
+    }
     if (data.best || data.worst) {
       html += `<div class="analytics-section"><div class="analytics-title">Signal Highlights</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
       if (data.best) { const mv = ((data.best.checkPrice - data.best.basePrice) / data.best.basePrice * 100).toFixed(1); html += `<div class="highlight-card"><div class="highlight-label">🏆 Best Signal</div><div class="highlight-ticker">${data.best.ticker}</div><div class="highlight-detail">+${mv}% actual<br>${data.best.catalyst}<br>${new Date(data.best.scannedAt).toLocaleDateString()}</div></div>`; }
@@ -1136,7 +1238,7 @@ function renderSettings() {
         </div>
         <button class="btn-connect-full" id="connectBtn" onclick="connectFromSettings()">${isConn ? '✓ Connected — tap to update' : 'Connect'}</button>
         <div class="connect-status" id="connectStatus">${isConn ? 'Connected.' : ''}</div>
-        <div class="settings-meta" style="margin-top:10px">Model: <span>claude-sonnet-4-20250514</span> · Est. cost/scan: <span>~$0.02–$0.05</span><br>Last scan: <span>${lastStr}</span> · Total scans: <span>${scans}</span></div>
+        <div class="settings-meta" style="margin-top:10px">Model: <span>claude-haiku-4-5</span> · Est. cost/scan: <span>~$0.02–$0.05</span><br>Last scan: <span>${lastStr}</span> · Total scans: <span>${scans}</span></div>
         <div class="settings-hint">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>. Stored only in this browser.</div>
       </div>
     </div>
