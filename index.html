@@ -192,6 +192,27 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;b
 .tag-fda{background:var(--purple-dim);color:var(--purple)}.tag-earn{background:var(--blue-dim);color:var(--blue)}
 .tag-ma{background:var(--amber-dim);color:var(--amber)}.tag-short{background:var(--red-dim);color:var(--red)}
 .tag-8k{background:var(--green-dim);color:var(--green)}.tag-macro{background:rgba(255,255,255,.06);color:var(--muted2)}
+.tag-momentum{background:rgba(176,110,255,.15);color:#d4a0ff;border:1px solid rgba(176,110,255,.25)}
+
+/* ── Momentum banner ── */
+.momentum-banner{display:flex;align-items:flex-start;gap:11px;background:rgba(176,110,255,.08);border:1px solid rgba(176,110,255,.25);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.momentum-icon{font-size:20px;flex-shrink:0}
+.momentum-banner-body{flex:1}
+.momentum-banner-title{font-size:11px;font-weight:600;color:#d4a0ff;margin-bottom:3px}
+.momentum-banner-sub{font-size:10px;color:var(--muted2);line-height:1.6}
+
+/* ── Momentum analysis ── */
+.momentum-analysis{display:flex;flex-direction:column;gap:8px}
+.ma-row{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:8px}
+.ma-bull{background:var(--green-dim);border:1px solid rgba(32,224,144,.2)}
+.ma-bear{background:var(--red-dim);border:1px solid rgba(255,69,96,.2)}
+.ma-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ma-body{flex:1}
+.ma-label{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.ma-text{font-size:11px;color:var(--text2);line-height:1.65}
+
+/* ── Momentum sidebar indicator ── */
+.ticker-item.is-momentum::after{content:'📈';position:absolute;top:3px;left:5px;font-size:8px;}
 .hero-metrics{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:198px}
 .metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
 .metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
