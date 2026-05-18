@@ -437,19 +437,23 @@ function isOnWatchlist(ticker) { return !!loadWatchlist().find(x => x.ticker ===
 // Fetch previous close price for accurate % change
 async function fetchPreviousClose(ticker) {
   const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(yUrl)}`;
-  try {
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
-    if (!Array.isArray(closes) || closes.length < 2) return null;
-    // Second to last close = yesterday
-    for (let i = closes.length - 2; i >= 0; i--) {
-      if (closes[i] != null) return parseFloat(closes[i].toFixed(4));
-    }
-    return null;
-  } catch { return null; }
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(yUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yUrl)}`
+  ];
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+      if (!Array.isArray(closes) || closes.length < 2) continue;
+      for (let i = closes.length - 2; i >= 0; i--) {
+        if (closes[i] != null) return parseFloat(closes[i].toFixed(4));
+      }
+    } catch(e) { console.warn('[SIGNAL] PrevClose failed:', e.message); }
+  }
+  return null;
 }
 
 // Fetch short interest and earnings date from Yahoo Finance
@@ -761,15 +765,22 @@ async function fetchStockPrice(ticker) {
 
 async function fetchOHLCV(ticker, range = '1d', interval = '5m') {
   const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=${interval}&range=${range}`;
-  const proxy = `https://corsproxy.io/?${encodeURIComponent(yUrl)}`;
-  try {
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const r = data?.chart?.result?.[0]; if (!r) return null;
-    const ts = r.timestamp || [], q = r.indicators?.quote?.[0] || {};
-    return ts.map((t, i) => q.open[i] == null ? null : { t: t * 1000, o: +(q.open[i] || 0).toFixed(4), h: +(q.high[i] || 0).toFixed(4), l: +(q.low[i] || 0).toFixed(4), c: +(q.close[i] || 0).toFixed(4), v: q.volume[i] || 0 }).filter(Boolean);
-  } catch { return null; }
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(yUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yUrl)}`
+  ];
+  for (const proxy of proxies) {
+    try {
+      const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const r = data?.chart?.result?.[0]; if (!r) continue;
+      const ts = r.timestamp || [], q = r.indicators?.quote?.[0] || {};
+      const result = ts.map((t, i) => q.open[i] == null ? null : { t: t*1000, o: +(q.open[i]||0).toFixed(4), h: +(q.high[i]||0).toFixed(4), l: +(q.low[i]||0).toFixed(4), c: +(q.close[i]||0).toFixed(4), v: q.volume[i]||0 }).filter(Boolean);
+      if (result.length) return result;
+    } catch(e) { console.warn('[SIGNAL] OHLCV failed:', e.message); }
+  }
+  return null;
 }
 
 async function fetchBasePrice(signal) {
