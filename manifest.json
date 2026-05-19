@@ -1,14 +1,34 @@
 {
   "name": "VERTEX — Pre-Event Intelligence",
   "short_name": "VERTEX",
-  "description": "Pre-event intelligence scanner for FDA, short squeezes, M&A, and momentum",
-  "start_url": "/",
+  "description": "Pre-market catalyst scanner with FDA watchfile, short squeeze detection, and M&A intelligence.",
+  "start_url": "/index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0A0C12",
   "theme_color": "#0A0C12",
-  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en-US",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [],
+  "categories": ["finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Scan Now",
+      "short_name": "Scan",
+      "description": "Run a full pre-event intelligence scan",
+      "url": "/index.html?action=scan",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Watchfile",
+      "short_name": "Watch",
+      "description": "View FDA watchfile",
+      "url": "/index.html?tab=watchfile",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
